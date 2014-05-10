@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Warp</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="showpassword_checkbox">Show password</string>
+    <string name="ok_label">Ok</string>
+    <string name="cancel_label">Cancel</string>
+</resources>
