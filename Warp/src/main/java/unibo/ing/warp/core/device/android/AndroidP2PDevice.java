@@ -3,7 +3,7 @@ package unibo.ing.warp.core.device.android;
 import android.net.wifi.p2p.WifiP2pDevice;
 import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
-import unibo.ing.warp.core.device.WarpAccessManager;
+import unibo.ing.warp.core.device.IWarpDeviceRequestManager;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 
@@ -16,9 +16,9 @@ public class AndroidP2PDevice extends DefaultWarpDevice {
     private WifiP2pDevice mP2pDevice;
     private WarpLocation mWarpLocation;
 
-    public AndroidP2PDevice(WarpAccessManager accessManager, WarpLocation location, WifiP2pDevice device)
+    public AndroidP2PDevice(IWarpDeviceRequestManager requestManager, WarpLocation location, WifiP2pDevice device)
     {
-        super(accessManager);
+        super(requestManager);
         mP2pDevice=device;
         mWarpLocation = location;
     }
@@ -62,6 +62,7 @@ public class AndroidP2PDevice extends DefaultWarpDevice {
     @Override
     public Class<? extends IWarpService> getConnectServiceClass()
     {
+        //TODO: IMPLEMENT SERVICE!!
         return null;
     }
 

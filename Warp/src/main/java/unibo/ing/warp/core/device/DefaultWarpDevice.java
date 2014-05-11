@@ -1,11 +1,6 @@
 package unibo.ing.warp.core.device;
 
-import unibo.ing.warp.core.IWarpEngine;
-import unibo.ing.warp.utils.WarpUtils;
-import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
-import unibo.ing.warp.core.service.WarpServiceInfo;
-import unibo.ing.warp.core.service.base.LookupService;
 import java.util.Collection;
 
 /**
@@ -14,16 +9,16 @@ import java.util.Collection;
 public abstract class DefaultWarpDevice implements IWarpDevice {
     private boolean bConnected;
     private Collection<String> mServicesNames;
-    private WarpAccessManager mAccessManager;
+    private IWarpDeviceRequestManager mRequestManager;
 
-    public DefaultWarpDevice(WarpAccessManager accessManager)
+    public DefaultWarpDevice(IWarpDeviceRequestManager requestManager)
     {
-        mAccessManager=accessManager;
+        mRequestManager=requestManager;
     }
 
-    protected WarpAccessManager getAccessManager()
+    protected IWarpDeviceRequestManager getWarpRequestManager()
     {
-        return mAccessManager;
+        return mRequestManager;
     }
 
     @Override
@@ -33,9 +28,10 @@ public abstract class DefaultWarpDevice implements IWarpDevice {
         {
             return mServicesNames;
         }
-        WarpServiceInfo lookupInfo = WarpUtils.getWarpServiceInfo(LookupService.class);
-        IWarpEngine localEngine = mAccessManager.getLocalDevice().getWarpEngine();
-        localEngine.callLocalService(lookupInfo.name(),listener,null);
+        if(mRequestManager != null)
+        {
+            mRequestManager.onServicesLookupRequest(this,listener);
+        }
         return null;
     }
 
@@ -57,6 +53,6 @@ public abstract class DefaultWarpDevice implements IWarpDevice {
         bConnected=connected;
     }
 
-    public abstract Class<? extends IWarpService> getConnectServiceClass();
-    public abstract Class<? extends IWarpService> getDisconnectServiceClass();
+    @Override
+    public synchronized void updateAbstractDevice(Object abstractDevice) {}
 }

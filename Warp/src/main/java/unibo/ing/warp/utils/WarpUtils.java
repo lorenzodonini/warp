@@ -25,6 +25,10 @@ public class WarpUtils {
      */
     public static WarpServiceInfo getWarpServiceInfo(Class<? extends IWarpService> serviceClass)
     {
+        if(serviceClass==null)
+        {
+            return null;
+        }
         WarpServiceInfo result=null;
         Annotation annotations [] = serviceClass.getAnnotations();
         for(Annotation a: annotations)

@@ -24,9 +24,10 @@ public class WifiScanService extends DefaultWarpService {
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,1);
+        checkOptionalParameters(params,2);
         Context androidContext = (Context)context;
         long discoverInterval = (Long)params[0];
+        boolean forceEnable = (Boolean)params[1];
 
         setContext(androidContext);
         mReceiver=new BroadcastReceiver() {
@@ -39,7 +40,7 @@ public class WifiScanService extends DefaultWarpService {
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         androidContext.registerReceiver(mReceiver,filter);
         setEnabled(true);
-        scanOperation(discoverInterval);
+        scanOperation(discoverInterval, forceEnable);
     }
 
     @Override
@@ -48,10 +49,15 @@ public class WifiScanService extends DefaultWarpService {
         //DO NOTHING SINCE THIS IS A LOCAL SERVICE
     }
 
-    private void scanOperation(long discoverInterval) throws Exception
+    private void scanOperation(long discoverInterval, boolean forceEnable) throws Exception
     {
         Context context = (Context)getContext();
         WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if(forceEnable)
+        {
+            //We can forcefully enable WiFi
+            manager.setWifiEnabled(true);
+        }
         while (isEnabled())
         {
             if(!manager.isWifiEnabled())

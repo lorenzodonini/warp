@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
                 if(isChecked)
                 {
                     warpDrive.callLocalService("scanService", wifiScanListener,
-                            new Object[]{DEFAULT_DISCOVER_INTERVAL});
+                            new Object[]{DEFAULT_DISCOVER_INTERVAL,true});
                 }
                 else
                 {
@@ -116,7 +116,7 @@ public class MainActivity extends Activity {
             devices[i]=new AndroidWifiHotspot(manager,iterator.next());
         }
         WarpDeviceManager deviceManager = manager.getDeviceManager();
-        deviceManager.addWarpDeviceCollection(devices,true);
+        deviceManager.addHomogeneousWarpDeviceCollection(devices,AndroidWifiHotspot.class,true);
         mListAdapter.clear();
         mListAdapter.addAll(deviceManager.getWarpDevicesNames());
         mListAdapter.notifyDataSetChanged();

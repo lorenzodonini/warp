@@ -1,6 +1,5 @@
 package unibo.ing.warp.core;
 
-import android.view.View;
 import unibo.ing.warp.core.device.IWarpDevice;
 
 /**
@@ -8,5 +7,6 @@ import unibo.ing.warp.core.device.IWarpDevice;
  */
 public interface InteractiveObject {
     public IWarpDevice getWarpDevice();
-    public View getView();
+    public Object getView();
+    public void updateView();
 }

@@ -9,10 +9,12 @@ import java.util.*;
  */
 public class WarpDeviceManager {
     private Map<String,IWarpDevice> mWarpDevices;
+    private Map<Class<? extends IWarpDevice>, Collection<IWarpDevice>> mTypeMapping;
 
     public WarpDeviceManager()
     {
         mWarpDevices=new HashMap<String, IWarpDevice>();
+        mTypeMapping=new HashMap<Class<? extends IWarpDevice>, Collection<IWarpDevice>>();
     }
 
     /**
@@ -25,7 +27,30 @@ public class WarpDeviceManager {
      */
     public synchronized void addWarpDevice(IWarpDevice device)
     {
-        mWarpDevices.put(device.getDeviceName(),device);
+        if(device==null)
+        {
+            return;
+        }
+        IWarpDevice oldDevice = mWarpDevices.get(device.getDeviceName());
+        if(oldDevice != null)
+        {
+            oldDevice.updateAbstractDevice(device.getAbstractDevice());
+        }
+        else
+        {
+            mWarpDevices.put(device.getDeviceName(),device);
+            Collection<IWarpDevice> mapping = mTypeMapping.get(device.getClass());
+            if(mapping != null)
+            {
+                mapping.add(device);
+            }
+            else
+            {
+                mapping = new ArrayList<IWarpDevice>();
+                mapping.add(device);
+                mTypeMapping.put(device.getClass(),mapping);
+            }
+        }
     }
 
     /**
@@ -42,10 +67,11 @@ public class WarpDeviceManager {
      * @param removeOlder  A flag which determines whether old elements of the same type
      *                     should be automatically removed or not
      */
-    public synchronized void addWarpDeviceCollection(Collection<IWarpDevice> devices, boolean removeOlder)
+    public synchronized void addHomogeneousWarpDeviceCollection(Collection<IWarpDevice> devices,
+                                        Class<? extends IWarpDevice> devicesClass, boolean removeOlder)
     {
         IWarpDevice [] array = (IWarpDevice[]) devices.toArray();
-        addWarpDeviceCollection(array,removeOlder);
+        addHomogeneousWarpDeviceCollection(array,devicesClass,removeOlder);
     }
 
     /**
@@ -66,42 +92,69 @@ public class WarpDeviceManager {
      * @param removeOlder  A flag which determines whether old elements of the same type
      *                     should be automatically removed or not
      */
-    public synchronized void addWarpDeviceCollection(IWarpDevice [] devices, boolean removeOlder)
+    public synchronized void addHomogeneousWarpDeviceCollection(IWarpDevice [] devices,
+                                        Class<? extends IWarpDevice> devicesClass, boolean removeOlder)
     {
-        for(IWarpDevice d: devices)
+        if(devices == null)
         {
-            addWarpDevice(d);
+            return;
         }
         if(removeOlder)
         {
-            autoUpdate(devices,devices[0].getClass());
+            removeOlderDevices(devicesClass,devices);
+        }
+        for(IWarpDevice device: devices)
+        {
+            update(mWarpDevices.get(device.getDeviceName()),device);
         }
     }
 
-    private void autoUpdate(IWarpDevice [] newDevices, Class<?> deviceClass)
+    private synchronized void update(IWarpDevice oldDevice, IWarpDevice device)
     {
-        boolean found;
-
-        for(String s: mWarpDevices.keySet())
+        if(oldDevice != null)
         {
-            found=false;
-            if(mWarpDevices.get(s).getClass()==deviceClass)
+            oldDevice.updateAbstractDevice(device.getAbstractDevice());
+        }
+        else
+        {
+            mWarpDevices.put(device.getDeviceName(),device);
+            Collection<IWarpDevice> oldDevices = mTypeMapping.get(device.getClass());
+            if(oldDevices != null)
             {
-                for(IWarpDevice d: newDevices)
-                {
-                    if(d.getDeviceName().equals(s))
-                    {
-                        found=true;
-                        break;
-                    }
-                }
-                if(!found)
-                {
-                    mWarpDevices.remove(s);
-                }
+                oldDevices.add(device);
+            }
+            else
+            {
+                oldDevices = new ArrayList<IWarpDevice>();
+                oldDevices.add(device);
+                mTypeMapping.put(device.getClass(),oldDevices);
             }
         }
     }
+
+    private synchronized void removeOlderDevices(Class<? extends IWarpDevice> deviceClass, IWarpDevice [] devices)
+    {
+        IWarpDevice foundDevice;
+        Collection<IWarpDevice> oldDevices = mTypeMapping.get(deviceClass);
+        for(IWarpDevice oldDevice: oldDevices)
+        {
+            foundDevice=null;
+            for(IWarpDevice device: devices)
+            {
+                if(device.getDeviceName().equals(oldDevice.getDeviceName()))
+                {
+                    foundDevice=oldDevice;
+                    break;
+                }
+            }
+            if(foundDevice==null)
+            {
+                oldDevices.remove(oldDevice);
+                mWarpDevices.remove(oldDevice.getDeviceName());
+            }
+        }
+    }
+
 
     public synchronized Set<String> getWarpDevicesNames()
     {
@@ -116,5 +169,10 @@ public class WarpDeviceManager {
     public synchronized IWarpDevice getWarpDeviceByName(String deviceName)
     {
         return mWarpDevices.get(deviceName);
+    }
+
+    public synchronized Collection<IWarpDevice> getWarpDevicesByClass(Class<? extends IWarpDevice> devicesClass)
+    {
+        return mTypeMapping.get(devicesClass);
     }
 }

@@ -47,11 +47,13 @@ public class AndroidWifiHotspot extends DefaultWarpDevice {
         return null;
     }
 
+    @Override
     public Class<? extends IWarpService> getConnectServiceClass()
     {
         return WifiConnectService.class;
     }
 
+    @Override
     public Class<? extends IWarpService> getDisconnectServiceClass()
     {
         return null; //TODO: insert valid class
@@ -60,18 +62,21 @@ public class AndroidWifiHotspot extends DefaultWarpDevice {
     @Override
     public void connect(IWarpServiceListener listener)
     {
-        if(!isConnected())
-        {
-            Class<? extends IWarpService> connectClass = getConnectServiceClass();
-            WarpServiceInfo connectInfo = WarpUtils.getWarpServiceInfo(connectClass);
-            IWarpEngine engine = getAccessManager().getLocalDevice().getWarpEngine();
-            engine.callLocalService(connectInfo.name(),listener,null);
-        }
+        getWarpRequestManager().onConnectRequest(this,listener);
     }
 
     @Override
     public void disconnect(IWarpServiceListener listener)
     {
         //TODO: to implement
+    }
+
+    @Override
+    public synchronized void updateAbstractDevice(Object abstractDevice)
+    {
+        if(abstractDevice instanceof ScanResult)
+        {
+            mScanResult= (ScanResult) abstractDevice;
+        }
     }
 }
