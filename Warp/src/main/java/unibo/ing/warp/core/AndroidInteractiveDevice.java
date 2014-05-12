@@ -6,11 +6,11 @@ import unibo.ing.warp.core.device.IWarpDevice;
 /**
  * Created by Lorenzo Donini on 5/11/2014.
  */
-public class AndroidInteractiveObject implements InteractiveObject{
+public class AndroidInteractiveDevice implements IWarpInteractiveDevice {
     private View mDeviceView;
     private IWarpDevice mWarpDevice;
 
-    public AndroidInteractiveObject(IWarpDevice device)
+    public AndroidInteractiveDevice(IWarpDevice device)
     {
         mWarpDevice = device;
     }
@@ -28,7 +28,8 @@ public class AndroidInteractiveObject implements InteractiveObject{
     }
 
     @Override
-    public void updateView() {
-
+    public void setView(Object view)
+    {
+        mDeviceView=(View)view;
     }
 }

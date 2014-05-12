@@ -1,5 +1,7 @@
 package unibo.ing.warp.core.device;
 
+import unibo.ing.warp.core.IWarpInteractiveDevice;
+import unibo.ing.warp.view.IViewObserver;
 import java.util.*;
 
 /**
@@ -8,51 +10,20 @@ import java.util.*;
  * Time: 13:46
  */
 public class WarpDeviceManager {
-    private Map<String,IWarpDevice> mWarpDevices;
-    private Map<Class<? extends IWarpDevice>, Collection<IWarpDevice>> mTypeMapping;
+    private IViewObserver mViewObserver;
+    private Map<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>> mWarpDevices;
 
     public WarpDeviceManager()
     {
-        mWarpDevices=new HashMap<String, IWarpDevice>();
-        mTypeMapping=new HashMap<Class<? extends IWarpDevice>, Collection<IWarpDevice>>();
+        mWarpDevices = new HashMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>>();
     }
 
-    /**
-     * Adds a single IWarpDevice to the WarpDeviceManager inner structure. Since
-     * the inner structure is a Map, there will be no duplicates. Using the deviceName
-     * property as the key inside the Map, in case the key already exists, the value
-     * will be overwritten with the new one.
-     *
-     * @param device  The IWarpDevice that needs to be added
-     */
-    public synchronized void addWarpDevice(IWarpDevice device)
+    public void setViewObserver(IViewObserver observer)
     {
-        if(device==null)
-        {
-            return;
-        }
-        IWarpDevice oldDevice = mWarpDevices.get(device.getDeviceName());
-        if(oldDevice != null)
-        {
-            oldDevice.updateAbstractDevice(device.getAbstractDevice());
-        }
-        else
-        {
-            mWarpDevices.put(device.getDeviceName(),device);
-            Collection<IWarpDevice> mapping = mTypeMapping.get(device.getClass());
-            if(mapping != null)
-            {
-                mapping.add(device);
-            }
-            else
-            {
-                mapping = new ArrayList<IWarpDevice>();
-                mapping.add(device);
-                mTypeMapping.put(device.getClass(),mapping);
-            }
-        }
+        mViewObserver = observer;
     }
 
+    //NEW STUFF
     /**
      * Adds a collection of IWarpDevices to the WarpDeviceManager inner structure.
      * The collection of devices passed to this method is usually homogeneous, being
@@ -62,16 +33,12 @@ public class WarpDeviceManager {
      *
      * The method converts the collection into an array, then invokes the
      * addWarpDeviceCollection(IWarpDevice [] devices) method.
-     *
-     * @param devices  The collection of newly discovered IWarpDevices
-     * @param removeOlder  A flag which determines whether old elements of the same type
-     *                     should be automatically removed or not
      */
-    public synchronized void addHomogeneousWarpDeviceCollection(Collection<IWarpDevice> devices,
-                                        Class<? extends IWarpDevice> devicesClass, boolean removeOlder)
+    public synchronized void addWarpDevices(Collection<IWarpInteractiveDevice> devices,
+                                    Class<? extends IWarpDevice> deviceClass, boolean removeOlder)
     {
-        IWarpDevice [] array = (IWarpDevice[]) devices.toArray();
-        addHomogeneousWarpDeviceCollection(array,devicesClass,removeOlder);
+        IWarpInteractiveDevice newDevices [] = (IWarpInteractiveDevice[]) devices.toArray();
+        addWarpDevices(newDevices,deviceClass,removeOlder);
     }
 
     /**
@@ -80,99 +47,122 @@ public class WarpDeviceManager {
      * them WifiDevices, P2PDevices or other. The inner structure is heterogeneous,
      * so the method doesn't discern between one type or another.
      * This method should be called after a successful discovery/scan operation.
-     *
-     * The method adds all the elements of the array to the inner structure,
-     * without generating any duplicates. Then, if requested, it performs an update
-     * procedure, which checks whether there are any older elements inside the inner
-     * structure of the same type as the ones passed to the method. In case there are
-     * any older elements found, these are automatically removed thanks to the
-     * autoUpdate(...) private method.
-     *
-     * @param devices  The array of newly discovered IWarpDevices
-     * @param removeOlder  A flag which determines whether old elements of the same type
-     *                     should be automatically removed or not
      */
-    public synchronized void addHomogeneousWarpDeviceCollection(IWarpDevice [] devices,
-                                        Class<? extends IWarpDevice> devicesClass, boolean removeOlder)
+    public synchronized void addWarpDevices(IWarpInteractiveDevice [] devices,
+                                    Class<? extends IWarpDevice> devicesClass, boolean removeOlder)
     {
-        if(devices == null)
+        if(devicesClass == null || devices == null)
         {
             return;
         }
+        Vector<IWarpInteractiveDevice> oldDevices = mWarpDevices.get(devicesClass);
+        if(oldDevices == null && devices.length > 0)
+        {
+            oldDevices = new Vector<IWarpInteractiveDevice>();
+        }
         if(removeOlder)
         {
-            removeOlderDevices(devicesClass,devices);
+            removeOlderDevices(oldDevices,devices);
         }
-        for(IWarpDevice device: devices)
-        {
-            update(mWarpDevices.get(device.getDeviceName()),device);
-        }
+        addNewerDevices(oldDevices,devices);
     }
 
-    private synchronized void update(IWarpDevice oldDevice, IWarpDevice device)
+    private synchronized void removeOlderDevices(Vector<IWarpInteractiveDevice> oldDevices,
+                                    IWarpInteractiveDevice [] newDevices)
     {
-        if(oldDevice != null)
+        boolean found;
+        for(IWarpInteractiveDevice oldDevice : oldDevices)
         {
-            oldDevice.updateAbstractDevice(device.getAbstractDevice());
-        }
-        else
-        {
-            mWarpDevices.put(device.getDeviceName(),device);
-            Collection<IWarpDevice> oldDevices = mTypeMapping.get(device.getClass());
-            if(oldDevices != null)
+            found=false;
+            for(IWarpInteractiveDevice newDevice : newDevices)
             {
-                oldDevices.add(device);
-            }
-            else
-            {
-                oldDevices = new ArrayList<IWarpDevice>();
-                oldDevices.add(device);
-                mTypeMapping.put(device.getClass(),oldDevices);
-            }
-        }
-    }
-
-    private synchronized void removeOlderDevices(Class<? extends IWarpDevice> deviceClass, IWarpDevice [] devices)
-    {
-        IWarpDevice foundDevice;
-        Collection<IWarpDevice> oldDevices = mTypeMapping.get(deviceClass);
-        for(IWarpDevice oldDevice: oldDevices)
-        {
-            foundDevice=null;
-            for(IWarpDevice device: devices)
-            {
-                if(device.getDeviceName().equals(oldDevice.getDeviceName()))
+                if(newDevice.getWarpDevice().getDeviceName().equals(oldDevice.getWarpDevice().getDeviceName()))
                 {
-                    foundDevice=oldDevice;
+                    found=true;
                     break;
                 }
             }
-            if(foundDevice==null)
+            if(!found)
             {
                 oldDevices.remove(oldDevice);
-                mWarpDevices.remove(oldDevice.getDeviceName());
+                if(mViewObserver != null)
+                {
+                    mViewObserver.onWarpDeviceRemoved(oldDevice);
+                }
             }
         }
     }
 
+    private synchronized void addNewerDevices(Vector<IWarpInteractiveDevice> oldDevices,
+                                    IWarpInteractiveDevice [] newDevices)
+    {
+        boolean found;
+        for(IWarpInteractiveDevice newDevice : newDevices)
+        {
+            found=false;
+            for(IWarpInteractiveDevice oldDevice : oldDevices)
+            {
+                if(newDevice.getWarpDevice().getDeviceName().equals(oldDevice.getWarpDevice().getDeviceName()))
+                {
+                    found=true;
+                    oldDevice.getWarpDevice().updateAbstractDevice(newDevice.getWarpDevice().getAbstractDevice());
+                    break;
+                }
+            }
+            if(!found)
+            {
+                oldDevices.add(newDevice);
+                if(mViewObserver != null)
+                {
+                    mViewObserver.onWarpDeviceAdded(newDevice);
+                }
+            }
+        }
+    }
 
     public synchronized Set<String> getWarpDevicesNames()
     {
-        return mWarpDevices.keySet();
+        Set<String> deviceNames = new HashSet<String>();
+        for(Vector<IWarpInteractiveDevice> devices : mWarpDevices.values())
+        {
+            for(IWarpInteractiveDevice device: devices)
+            {
+                deviceNames.add(device.getWarpDevice().getDeviceName());
+            }
+        }
+        return deviceNames;
     }
 
     public synchronized Collection<IWarpDevice> getWarpDevices()
     {
-        return mWarpDevices.values();
+        List<IWarpDevice> warpDevices = new ArrayList<IWarpDevice>();
+        for(Vector<IWarpInteractiveDevice> devices : mWarpDevices.values())
+        {
+            for(IWarpInteractiveDevice device: devices)
+            {
+                warpDevices.add(device.getWarpDevice());
+            }
+        }
+        return warpDevices;
     }
 
     public synchronized IWarpDevice getWarpDeviceByName(String deviceName)
     {
-        return mWarpDevices.get(deviceName);
+        for(Vector<IWarpInteractiveDevice> devices : mWarpDevices.values())
+        {
+            for(IWarpInteractiveDevice device: devices)
+            {
+                if(device.getWarpDevice().getDeviceName().equals(deviceName))
+                {
+                    return device.getWarpDevice();
+                }
+            }
+        }
+        return null;
     }
 
-    public synchronized Collection<IWarpDevice> getWarpDevicesByClass(Class<? extends IWarpDevice> devicesClass)
+    public synchronized Vector<IWarpInteractiveDevice> getWarpDevicesByClass(Class<? extends IWarpDevice> devicesClass)
     {
-        return mTypeMapping.get(devicesClass);
+        return mWarpDevices.get(devicesClass);
     }
 }

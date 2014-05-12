@@ -3,6 +3,7 @@ package unibo.ing.warp.core.device;
 import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
+import unibo.ing.warp.view.IWarpDeviceViewFactory;
 
 import java.util.Collection;
 
@@ -23,4 +24,5 @@ public interface IWarpDevice {
     public void updateAbstractDevice(Object abstractDevice);
     public Class<? extends IWarpService> getConnectServiceClass();
     public Class<? extends IWarpService> getDisconnectServiceClass();
+    public Object createView(IWarpDeviceViewFactory factory);
 }
