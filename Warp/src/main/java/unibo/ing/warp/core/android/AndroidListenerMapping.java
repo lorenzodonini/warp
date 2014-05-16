@@ -8,7 +8,6 @@ import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidDirectWifiDiscoverServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidPushFileServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWifiScanServiceListener;
-
 import java.util.HashMap;
 import java.util.Map;
 

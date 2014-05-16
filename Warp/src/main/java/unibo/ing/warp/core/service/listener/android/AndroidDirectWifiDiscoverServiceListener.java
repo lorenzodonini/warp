@@ -1,6 +1,8 @@
 package unibo.ing.warp.core.service.listener.android;
 
 import android.net.wifi.p2p.WifiP2pDevice;
+import unibo.ing.warp.core.AndroidInteractiveDevice;
+import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.android.AndroidP2PDevice;
@@ -49,15 +51,16 @@ public class AndroidDirectWifiDiscoverServiceListener extends DefaultWarpService
         {
             return;
         }
-        IWarpDevice [] devices = new IWarpDevice[p2pDevices.size()];
+        IWarpInteractiveDevice [] interactiveDevices = new IWarpInteractiveDevice[p2pDevices.size()];
         int i=0;
         for(WifiP2pDevice p2pDevice: p2pDevices)
         {
             //TODO: beware! no WarpLocation set right now :(
-            devices[i++]= new AndroidP2PDevice(warpAccessManager,null,p2pDevice);
+            interactiveDevices[i++] = new AndroidInteractiveDevice(
+                    new AndroidP2PDevice(warpAccessManager,null,p2pDevice));
         }
-        warpAccessManager.getDeviceManager().addHomogeneousWarpDeviceCollection(
-                devices,AndroidP2PDevice.class,true);
+        warpAccessManager.getDeviceManager().addWarpDevices(
+                interactiveDevices,AndroidP2PDevice.class,true);
     }
 
     @Override

@@ -20,6 +20,7 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
 public class WifiConnectService extends DefaultWarpService {
     private boolean bConnected;
     private BroadcastReceiver mReceiver;
+    private WifiConfiguration mTargetConfiguration;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
@@ -32,13 +33,13 @@ public class WifiConnectService extends DefaultWarpService {
         Context androidContext = (Context)context;
         setContext(context);
 
-        wifiConfiguration=(WifiConfiguration)params[0];
+        mTargetConfiguration=(WifiConfiguration)params[0];
         networkId=(Integer)params[1];
         wifiManager=(WifiManager)androidContext.getSystemService(Context.WIFI_SERVICE);
 
         setPercentProgress(0);
         getWarpServiceHandler().onServiceProgressUpdate(this);
-        bConnected=performConnect(wifiManager,wifiConfiguration,networkId);
+        bConnected=performConnect(wifiManager,mTargetConfiguration,networkId);
     }
 
     @Override
@@ -86,8 +87,13 @@ public class WifiConnectService extends DefaultWarpService {
 
     private void onConnectedHandler()
     {
-        ((Context)getContext()).unregisterReceiver(mReceiver);
-        mReceiver=null; //Since the Service may stay referenced, the receiver should be too --> Deallocate
+        Context context = (Context)getContext();
+        context.unregisterReceiver(mReceiver);
+        mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
+
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo();
+        bConnected = info.getNetworkId() == mTargetConfiguration.networkId;
         setPercentProgress(100);
         getWarpServiceHandler().onServiceProgressUpdate(this);
     }
@@ -95,7 +101,7 @@ public class WifiConnectService extends DefaultWarpService {
     @Override
     public Object[] getResult()
     {
-        return new Object [] {bConnected};
+        return new Object [] {(bConnected) ? "Connected" : "Connection refused"};
     }
 
     @Override

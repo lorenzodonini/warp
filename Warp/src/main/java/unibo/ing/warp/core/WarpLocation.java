@@ -22,6 +22,8 @@ import java.net.InetAddress;
  */
 public class WarpLocation {
     private InetAddress mIPv4Address;
+    private String mStringIPv4;
+    private byte [] mByteIPv4;
     public static final String LOCAL_ADDRESS="localhost";
 
     public WarpLocation()
@@ -90,12 +92,7 @@ public class WarpLocation {
      */
     public void setIPv4Address(byte addr [])
     {
-        AndroidUtils.getIpv4Address(addr,new AndroidUtils.IAndroidInetAddressListener() {
-            @Override
-            public void onAddressRetrieved(InetAddress address) {
-                WarpLocation.this.setIPv4Address(address);
-            }
-        });
+        mByteIPv4=addr;
     }
 
     /**
@@ -105,12 +102,7 @@ public class WarpLocation {
      */
     public void setIPv4Address(String addr)
     {
-        AndroidUtils.getIpv4Address(addr,new AndroidUtils.IAndroidInetAddressListener() {
-            @Override
-            public void onAddressRetrieved(InetAddress address) {
-                WarpLocation.this.setIPv4Address(address);
-            }
-        });
+        mStringIPv4=addr;
     }
 
     /**
@@ -123,4 +115,8 @@ public class WarpLocation {
     {
         return mIPv4Address;
     }
+
+    public synchronized String getStringIPv4Address() { return mStringIPv4; }
+
+    public synchronized byte [] getRawIPv4Address() { return mByteIPv4; }
 }

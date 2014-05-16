@@ -60,11 +60,6 @@ public class WifiScanService extends DefaultWarpService {
         }
         while (isEnabled())
         {
-            if(!manager.isWifiEnabled())
-            {
-                throw new Exception("WifiScanService.scanOperation: " +
-                        "Wifi module is currently inactive!");
-            }
             manager.startScan();
             Thread.sleep(discoverInterval);
         }
@@ -78,6 +73,11 @@ public class WifiScanService extends DefaultWarpService {
     private synchronized void setEnabled(boolean enabled)
     {
         bEnabled=enabled;
+        if(!enabled && mReceiver != null)
+        {
+            Context context = (Context) getContext();
+            context.unregisterReceiver(mReceiver);
+        }
     }
 
     public void stopService()

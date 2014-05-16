@@ -8,4 +8,5 @@ import unibo.ing.warp.core.IWarpInteractiveDevice;
 public interface IViewObserver {
     public void onWarpDeviceAdded(IWarpInteractiveDevice device);
     public void onWarpDeviceRemoved(IWarpInteractiveDevice device);
+    public void onWarpDeviceStatusChanged(IWarpInteractiveDevice device);
 }

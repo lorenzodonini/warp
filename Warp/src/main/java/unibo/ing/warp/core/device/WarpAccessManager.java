@@ -64,7 +64,7 @@ public class WarpAccessManager implements IWarpDeviceRequestManager{
     @Override
     public void onDisconnectRequest(IWarpDevice device, IWarpServiceListener listener)
     {
-
+        //TODO: implement please!
     }
 
     @Override

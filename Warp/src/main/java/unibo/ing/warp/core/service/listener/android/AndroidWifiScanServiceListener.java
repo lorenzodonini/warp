@@ -1,6 +1,10 @@
 package unibo.ing.warp.core.service.listener.android;
 
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import unibo.ing.warp.core.AndroidInteractiveDevice;
+import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.WarpDeviceManager;
@@ -16,13 +20,15 @@ import java.util.List;
  */
 public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
     private WarpAccessManager warpAccessManager;
+    private WifiManager wifiManager;
 
     @Override
     public void putDefaultValues(Object[] values)
     {
-        if(values != null && values.length == 1)
+        if(values != null && values.length == 2)
         {
             warpAccessManager = (WarpAccessManager)values[0];
+            wifiManager = (WifiManager)values[1];
         }
     }
 
@@ -51,14 +57,22 @@ public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
         {
             return;
         }
-        IWarpDevice devices [] = new IWarpDevice[scanResults.size()];
+        IWarpInteractiveDevice interactiveDevices [] = new IWarpInteractiveDevice[scanResults.size()];
+        WifiInfo connectionInfo = wifiManager.getConnectionInfo();
+        AndroidWifiHotspot device;
         int i=0;
         for(ScanResult scanResult : scanResults)
         {
-            devices[i++] = new AndroidWifiHotspot(warpAccessManager,scanResult);
+            device = new AndroidWifiHotspot(warpAccessManager,scanResult);
+            //Checking if already connected to the found device
+            if(connectionInfo != null && connectionInfo.getSSID().equals("\""+device.getDeviceName()+"\""))
+            {
+                device.setConnected(true);
+            }
+            interactiveDevices[i++] = new AndroidInteractiveDevice(device);
         }
-        warpAccessManager.getDeviceManager().addHomogeneousWarpDeviceCollection(
-                devices,AndroidWifiHotspot.class,true);
+        warpAccessManager.getDeviceManager().addWarpDevices(
+                interactiveDevices, AndroidWifiHotspot.class, true);
     }
 
     @Override

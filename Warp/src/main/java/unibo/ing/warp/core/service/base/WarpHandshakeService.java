@@ -42,6 +42,24 @@ public class WarpHandshakeService extends DefaultWarpService {
 
         Socket socket;
         InetAddress address = remoteWarpDeviceLocation.getIPv4Address();
+        if(address == null)
+        {
+            String stringAddress = remoteWarpDeviceLocation.getStringIPv4Address();
+            byte [] rawAddress = remoteWarpDeviceLocation.getRawIPv4Address();
+            if(stringAddress != null)
+            {
+                address = InetAddress.getByName(stringAddress);
+            }
+            else if(rawAddress != null)
+            {
+                address = InetAddress.getByAddress(rawAddress);
+            }
+            else
+            {
+                //TODO: needs to be a specific exception
+                throw new Exception("WarpHandshakeService.callService: no IP address is set!");
+            }
+        }
 
         socket = new Socket(address,WarpDispatcherService.LISTEN_PORT);
 

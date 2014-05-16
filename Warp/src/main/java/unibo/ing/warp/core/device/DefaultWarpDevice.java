@@ -7,9 +7,9 @@ import java.util.Collection;
  * Created by Lorenzo Donini on 5/7/2014.
  */
 public abstract class DefaultWarpDevice implements IWarpDevice {
-    private boolean bConnected;
     private Collection<String> mServicesNames;
     private IWarpDeviceRequestManager mRequestManager;
+    private boolean bConnected;
 
     public DefaultWarpDevice(IWarpDeviceRequestManager requestManager)
     {
@@ -36,12 +36,6 @@ public abstract class DefaultWarpDevice implements IWarpDevice {
     }
 
     @Override
-    public void setAvailableServicesNames(Collection<String> servicesNames)
-    {
-        mServicesNames = servicesNames;
-    }
-
-    @Override
     public synchronized boolean isConnected()
     {
         return bConnected;
@@ -51,6 +45,12 @@ public abstract class DefaultWarpDevice implements IWarpDevice {
     public synchronized void setConnected(boolean connected)
     {
         bConnected=connected;
+    }
+
+    @Override
+    public void setAvailableServicesNames(Collection<String> servicesNames)
+    {
+        mServicesNames = servicesNames;
     }
 
     @Override

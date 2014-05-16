@@ -2,6 +2,7 @@ package unibo.ing.warp.core;
 
 import android.view.View;
 import unibo.ing.warp.core.device.IWarpDevice;
+import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 
 /**
  * Created by Lorenzo Donini on 5/11/2014.

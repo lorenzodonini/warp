@@ -35,6 +35,7 @@ public class AndroidLocalDevice implements IWarpLocalDevice {
         }
         else
         {
+            //TODO: not exactly necessary anymore! check it out
             AndroidUtils.getIpv4Address(WarpLocation.LOCAL_ADDRESS,new AndroidUtils.IAndroidInetAddressListener() {
                 @Override
                 public void onAddressRetrieved(InetAddress address) {

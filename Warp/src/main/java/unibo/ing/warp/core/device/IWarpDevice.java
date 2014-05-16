@@ -17,12 +17,11 @@ public interface IWarpDevice {
     public WarpLocation getDeviceLocation();
     public Collection<String> getAvailableServicesNames(IWarpServiceListener listener);
     public void setAvailableServicesNames(Collection<String> servicesNames);
+    public void updateAbstractDevice(Object abstractDevice);
+    public Class<? extends IWarpService> getConnectServiceClass();
+    public Class<? extends IWarpService> getDisconnectServiceClass();
     public boolean isConnected();
     public void setConnected(boolean connected);
     public void connect(IWarpServiceListener listener);
     public void disconnect(IWarpServiceListener listener);
-    public void updateAbstractDevice(Object abstractDevice);
-    public Class<? extends IWarpService> getConnectServiceClass();
-    public Class<? extends IWarpService> getDisconnectServiceClass();
-    public Object createView(IWarpDeviceViewFactory factory);
 }

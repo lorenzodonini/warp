@@ -1,31 +1,30 @@
 package unibo.ing.warp.activity;
 
-import android.net.wifi.ScanResult;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+import android.view.View;
 import android.widget.*;
 import unibo.ing.warp.R;
 import unibo.ing.warp.core.IWarpEngine;
-import unibo.ing.warp.core.WarpLocation;
-import unibo.ing.warp.core.device.IWarpDevice;
+import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.android.AndroidLocalDevice;
-import unibo.ing.warp.core.device.WarpDeviceManager;
-import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
 import unibo.ing.warp.core.service.IWarpService;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.base.PushFileService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
-
+import unibo.ing.warp.view.AndroidDeviceAdapter;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 public class MainActivity extends Activity {
-    private ArrayAdapter<String> mListAdapter;
-    private IWarpServiceListener wifiScanListener;
+    private AndroidDeviceAdapter mListAdapter;
+    private BroadcastReceiver mReceiver;
     private String mAccessKey = "TEMP_KEY";
     private static final long DEFAULT_DISCOVER_INTERVAL = 30000; //Every 30 seconds
 
@@ -41,19 +40,27 @@ public class MainActivity extends Activity {
         final IWarpEngine warpDrive = manager.getLocalDevice().getWarpEngine();
         warpDrive.addWarpService(WifiScanService.class);
         warpDrive.addWarpService(WifiConnectService.class);
+        warpDrive.addWarpService(DirectWifiDiscoverService.class);
         warpDrive.addWarpService(PushFileService.class);
+
+        final WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 
         //Graphics
         ToggleButton toggle=(ToggleButton)findViewById(R.id.discoveryToggle);
-        initializeLocalListeners();
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
                 if(isChecked)
                 {
+                    IWarpServiceListener wifiScanListener = warpDrive.getDefaultListenerForService(
+                            "scanService",new Object [] {manager,wifiManager});
                     warpDrive.callLocalService("scanService", wifiScanListener,
                             new Object[]{DEFAULT_DISCOVER_INTERVAL,true});
+                    IWarpServiceListener directWifiListener = warpDrive.getDefaultListenerForService(
+                            "p2pDiscovery", new Object [] {manager});
+                    warpDrive.callLocalService("p2pDiscovery", directWifiListener,
+                            new Object [] {DEFAULT_DISCOVER_INTERVAL+10000});
                 }
                 else
                 {
@@ -73,55 +80,18 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        ListView listView=(ListView)findViewById(R.id.deviceList);
-        mListAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
-        listView.setAdapter(mListAdapter);
-        //TODO: Add onClick listener for adapter items
-    }
-
-    private void initializeLocalListeners()
-    {
-        wifiScanListener=new IWarpServiceListener() {
+        GridView gridView = (GridView)findViewById(R.id.deviceView);
+        mListAdapter = new AndroidDeviceAdapter(this);
+        gridView.setAdapter(mListAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onServiceCompleted(IWarpService servant)
-            {
-                Toast.makeText(MainActivity.this,"Terminated!",Toast.LENGTH_SHORT).show();
-                updateWifiDevices(servant);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                IWarpInteractiveDevice device = mListAdapter.getItem(position);
+                Toast.makeText(MainActivity.this,device.getWarpDevice().getDeviceName(),Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onServiceProgressUpdate(IWarpService servant)
-            {
-                Toast.makeText(MainActivity.this,"Results found!",Toast.LENGTH_SHORT).show();
-                updateWifiDevices(servant);
-            }
-
-            @Override
-            public void onServiceAbort(String message)
-            {
-                Toast.makeText(MainActivity.this,message,Toast.LENGTH_LONG).show();
-            }
-        };
+        });
+        manager.getDeviceManager().setViewObserver(mListAdapter);
     }
-
-    private void updateWifiDevices(IWarpService servant)
-    {
-        List<ScanResult> scanResults = (List<ScanResult>) servant.getResult()[0];
-        IWarpDevice devices [] = new IWarpDevice[scanResults.size()];
-        Iterator<ScanResult> iterator = scanResults.iterator();
-        WarpAccessManager manager = WarpAccessManager.getInstance(mAccessKey);
-        int i=0;
-        while(i<devices.length && iterator.hasNext())
-        {
-            devices[i]=new AndroidWifiHotspot(manager,iterator.next());
-        }
-        WarpDeviceManager deviceManager = manager.getDeviceManager();
-        deviceManager.addHomogeneousWarpDeviceCollection(devices,AndroidWifiHotspot.class,true);
-        mListAdapter.clear();
-        mListAdapter.addAll(deviceManager.getWarpDevicesNames());
-        mListAdapter.notifyDataSetChanged();
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -130,5 +100,4 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    
 }

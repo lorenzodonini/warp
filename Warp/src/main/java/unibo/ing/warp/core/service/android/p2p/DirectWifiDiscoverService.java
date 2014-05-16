@@ -37,10 +37,10 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,2);
+        checkOptionalParameters(params,1);
         setContext(context);
         long interval = (Long)params[0];
-        mChannel = (Channel)params[1]; //Channel has already been initialized
+        //mChannel = (Channel)params[1]; //Channel has already been initialized
 
         //Logic starts now
         setEnabled(true);
@@ -61,6 +61,7 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
         Context androidContext = (Context)getContext();
         androidContext.registerReceiver(mReceiver, intentFilter);
         mDirectWifiManager=(WifiP2pManager)androidContext.getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mDirectWifiManager.initialize((Context)getContext(),((Context)getContext()).getMainLooper(),null);
         discoveryOperation(interval);
     }
 
@@ -98,12 +99,12 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
                 getSystemService(Context.WIFI_SERVICE);
         while (isEnabled())
         {
-            if(!wifiManager.isWifiEnabled())
+            if(wifiManager.isWifiEnabled())
             {
-                throw new Exception("DirectWifiDiscoverService.discoveryOperation: " +
-                        "Wifi module is currently inactive!");
+                mDirectWifiManager.discoverPeers(mChannel,actionListener);
+                /*throw new Exception("DirectWifiDiscoverService.discoveryOperation: " +
+                        "Wifi module is currently inactive!");*/
             }
-            mDirectWifiManager.discoverPeers(mChannel,actionListener);
             Thread.sleep(discoverInterval);
         }
     }

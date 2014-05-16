@@ -6,6 +6,8 @@ import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.*;
 import unibo.ing.warp.core.service.base.LookupService;
 import unibo.ing.warp.core.service.base.PushObjectService;
+import unibo.ing.warp.core.service.base.WarpDispatcherService;
+import unibo.ing.warp.core.service.base.WarpHandshakeService;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWarpServiceListenerFactory;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
@@ -59,8 +61,8 @@ public class AndroidWarpDrive implements IWarpEngine {
         mListenerFactory = new AndroidWarpServiceListenerFactory();
 
         //ADDING CORE SERVICES
-        addWarpService(AndroidWarpServiceContainer.DISPATCHER_SERVICE_CLASS);
-        addWarpService(AndroidWarpServiceContainer.HANDSHAKE_SERVICE_CLASS);
+        addWarpService(WarpDispatcherService.class);
+        addWarpService(WarpHandshakeService.class);
         addWarpService(LookupService.class);
         addWarpService(PushObjectService.class);
     }
@@ -186,7 +188,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         /*Request Dispatcher Service is called on startup, and works as a Daemon.
         If the container Activity is garbaged though, the background Thread will be killed,
         instead of acting as a System service. */
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(AndroidWarpServiceContainer.DISPATCHER_SERVICE_CLASS);
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WarpDispatcherService.class);
         callLocalService(info.name(),null,new Object [] {this});
     }
 

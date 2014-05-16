@@ -29,8 +29,6 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     private Handler mHandler;
     private Map<String, Collection<Runnable>> mRunningServices;
     private Map<IBeam, IWarpService> mActiveBeams;
-    public static final Class<? extends IWarpService> DISPATCHER_SERVICE_CLASS=WarpDispatcherService.class;
-    public static final Class<? extends IWarpService> HANDSHAKE_SERVICE_CLASS=WarpHandshakeService.class;
 
     public AndroidWarpServiceContainer()
     {
@@ -315,13 +313,13 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         @Override
         public void run()
         {
-            WarpServiceInfo info = WarpUtils.getWarpServiceInfo(HANDSHAKE_SERVICE_CLASS);
+            WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WarpHandshakeService.class);
             IWarpService handshakeService = null;
             IBeam warpBeam = null;
             if(info != null && getRegisteredWarpServiceByName(info.name())!=null)
             {
                 try {
-                    handshakeService = HANDSHAKE_SERVICE_CLASS.newInstance();
+                    handshakeService = WarpHandshakeService.class.newInstance();
                 }
                 catch (InstantiationException e)
                 {

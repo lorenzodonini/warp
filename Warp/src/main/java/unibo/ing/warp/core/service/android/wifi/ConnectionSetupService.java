@@ -48,11 +48,7 @@ public class ConnectionSetupService extends DefaultWarpService {
     @Override
     public Object[] getResult()
     {
-        Object result [] = new Object[2];
-
-        result[0]=mNetworkId;
-        result[1]=mWifiConfiguration;
-        return result;
+        return new Object[] {mNetworkId,mWifiConfiguration};
     }
 
     @Override
