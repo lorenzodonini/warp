@@ -11,17 +11,11 @@
     <GridView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/deviceView" android:layout_above="@+id/discoveryToggle"
+            android:id="@+id/deviceView"
             android:layout_alignParentTop="true" android:layout_alignParentLeft="true"
             android:layout_centerHorizontal="true" android:smoothScrollbar="false"
             android:stackFromBottom="false" android:choiceMode="none" android:verticalSpacing="12dp"
             tools:listitem="@layout/device_view" android:stretchMode="columnWidth" android:numColumns="auto_fit"
             android:gravity="center_horizontal" android:columnWidth="@dimen/activity_device_width" android:horizontalSpacing="12dp"/>
-    <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New ToggleButton"
-            android:id="@+id/discoveryToggle" android:layout_centerHorizontal="true" android:layout_alignParentTop="false"
-            android:layout_alignParentBottom="true" android:checked="false"/>
 
 </RelativeLayout>

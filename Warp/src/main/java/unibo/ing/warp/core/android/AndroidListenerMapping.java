@@ -2,11 +2,13 @@ package unibo.ing.warp.core.android;
 
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
+import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.base.PushFileService;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidDirectWifiDiscoverServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidPushFileServiceListener;
+import unibo.ing.warp.core.service.listener.android.AndroidWifiConnectServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWifiScanServiceListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +25,7 @@ public class AndroidListenerMapping {
         listenerMapping.put(PushFileService.class, AndroidPushFileServiceListener.class);
         listenerMapping.put(WifiScanService.class, AndroidWifiScanServiceListener.class);
         listenerMapping.put(DirectWifiDiscoverService.class, AndroidDirectWifiDiscoverServiceListener.class);
+        listenerMapping.put(WifiConnectService.class, AndroidWifiConnectServiceListener.class);
     }
 
     public static Class<? extends DefaultWarpServiceListener> getListenerClass(

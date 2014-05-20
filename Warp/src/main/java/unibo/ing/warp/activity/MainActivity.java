@@ -2,10 +2,13 @@ package unibo.ing.warp.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import unibo.ing.warp.R;
@@ -44,10 +47,15 @@ public class MainActivity extends Activity {
         warpDrive.addWarpService(PushFileService.class);
 
         final WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        final WifiP2pManager p2pManager = (WifiP2pManager)getSystemService(WIFI_P2P_SERVICE);
+        mReceiver = new AndroidNetworkStateManager(manager,wifiManager,p2pManager);
+        IntentFilter filter = new IntentFilter();
+        //filter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        registerReceiver(mReceiver,filter);
 
         //Graphics
-        ToggleButton toggle=(ToggleButton)findViewById(R.id.discoveryToggle);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        /*toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
@@ -79,7 +87,7 @@ public class MainActivity extends Activity {
                     }
                 }
             }
-        });
+        });*/
         GridView gridView = (GridView)findViewById(R.id.deviceView);
         mListAdapter = new AndroidDeviceAdapter(this);
         gridView.setAdapter(mListAdapter);
@@ -99,5 +107,38 @@ public class MainActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_wifi:
+                toggleWifi(item);
+                break;
+            case R.id.action_p2p:
+                toggleWifiDirect(item);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+    private void toggleWifi(MenuItem item)
+    {
+        //TODO: adjust please!!
+        WarpAccessManager manager = WarpAccessManager.getInstance(mAccessKey);
+        final WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        IWarpServiceListener wifiScanListener = manager.getLocalDevice().getWarpEngine().
+                getDefaultListenerForService("scanService",new Object [] {manager,wifiManager});
+        manager.getLocalDevice().getWarpEngine().callLocalService("scanService", wifiScanListener,
+                new Object[]{DEFAULT_DISCOVER_INTERVAL,true});
+    }
+
+    private void toggleWifiDirect(MenuItem item)
+    {
+
     }
 }

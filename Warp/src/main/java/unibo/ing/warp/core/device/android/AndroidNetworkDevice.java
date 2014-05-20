@@ -2,9 +2,7 @@ package unibo.ing.warp.core.device.android;
 
 import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
-import unibo.ing.warp.core.device.IWarpDeviceRequestManager;
 import unibo.ing.warp.core.service.IWarpService;
-import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 
 /**
  * Created by Lorenzo Donini on 5/7/2014.
@@ -12,12 +10,11 @@ import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 public class AndroidNetworkDevice extends DefaultWarpDevice {
     private WarpLocation mDeviceLocation;
 
-    public AndroidNetworkDevice(IWarpDeviceRequestManager requestManager, WarpLocation location)
+    public AndroidNetworkDevice(WarpLocation location)
     {
-        super(requestManager);
+        super();
         mDeviceLocation=location;
         //Once a device is discovered, it is virtually already connected
-        setConnected(true);
     }
 
     @Override
@@ -52,16 +49,5 @@ public class AndroidNetworkDevice extends DefaultWarpDevice {
     public WarpLocation getDeviceLocation()
     {
         return mDeviceLocation;
-    }
-
-    @Override
-    public void connect(IWarpServiceListener listener)
-    {
-        //Inside a LAN nothing needs to be implemented, since the devices are already in visibility
-    }
-
-    @Override
-    public void disconnect(IWarpServiceListener listener) {
-        //TODO: to implement
     }
 }

@@ -1,11 +1,13 @@
 package unibo.ing.warp.core.android;
 
 import unibo.ing.warp.core.IBeam;
-import unibo.ing.warp.core.IWarpBeamObserver;
+import unibo.ing.warp.core.IWarpServiceObserver;
 import unibo.ing.warp.core.service.IWarpService;
+import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.IBeamHandler;
 import unibo.ing.warp.core.IHandler;
+import unibo.ing.warp.utils.WarpUtils;
 
 import java.io.IOException;
 
@@ -14,16 +16,18 @@ import java.io.IOException;
  */
 public abstract class AndroidHandler implements IHandler, IBeamHandler {
     private IWarpServiceListener mListener;
-    private IWarpBeamObserver mContainer;
+    private IWarpServiceObserver mContainer;
     private boolean bCreated;
     private IWarpService.ServiceStatus mStatus;
+    private long mId;
 
-    public AndroidHandler(IWarpServiceListener listener, IWarpBeamObserver observer)
+    public AndroidHandler(IWarpServiceListener listener, IWarpServiceObserver observer, long id)
     {
         mListener=listener;
         mContainer=observer;
         bCreated=false;
         mStatus= IWarpService.ServiceStatus.INACTIVE;
+        mId=id;
     }
 
     @Override
@@ -50,13 +54,14 @@ public abstract class AndroidHandler implements IHandler, IBeamHandler {
                 try {
                     warpBeam.disable();
                     mContainer.onBeamDestroy(warpBeam,servant);
+                    mContainer.onServiceDestroy(servant);
                 }
                 catch (IOException e)
                 {
                     e.printStackTrace();
                 }
             }
-            onServiceCompleted(servant);
+            onServiceCompletedOperation(servant);
         }
     }
 
@@ -71,13 +76,14 @@ public abstract class AndroidHandler implements IHandler, IBeamHandler {
                 try {
                     warpBeam.disable();
                     mContainer.onBeamDestroy(warpBeam,servant);
+                    mContainer.onServiceDestroy(servant);
                 }
                 catch (IOException e)
                 {
                     e.printStackTrace();
                 }
             }
-            onServiceAbort(message);
+            onServiceAbortOperation(message);
         }
     }
 
@@ -97,6 +103,32 @@ public abstract class AndroidHandler implements IHandler, IBeamHandler {
         return mListener;
     }
 
-    protected abstract void onServiceCompleted(final IWarpService servant);
-    protected abstract void onServiceAbort(final String message);
+    @Override
+    public void onServiceCompleted(IWarpService servant)
+    {
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(servant.getClass());
+        if(info.completion() == WarpServiceInfo.ServiceCompletion.EXPLICIT)
+        {
+            completeService(null,servant);
+        }
+    }
+
+    @Override
+    public void onServiceAbort(IWarpService servant, String message)
+    {
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(servant.getClass());
+        if(info.completion() == WarpServiceInfo.ServiceCompletion.EXPLICIT)
+        {
+            abortService(null,servant,message);
+        }
+    }
+
+    @Override
+    public long getHandledServiceId()
+    {
+        return mId;
+    }
+
+    protected abstract void onServiceCompletedOperation(final IWarpService servant);
+    protected abstract void onServiceAbortOperation(final String message);
 }

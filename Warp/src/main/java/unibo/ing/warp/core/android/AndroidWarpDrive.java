@@ -12,6 +12,7 @@ import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWarpServiceListenerFactory;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.service.listener.IWarpServiceListenerFactory;
+import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.utils.WarpUtils;
 import java.util.Collection;
 
@@ -106,7 +107,7 @@ public class AndroidWarpDrive implements IWarpEngine {
                     info.type()== WarpServiceInfo.Type.LOCAL)
             {
                 //Current found service is a Local Service
-                mContainer.startLocalWarpService(serviceClass,this,listener,params);
+                mContainer.startLocalWarpService(serviceClass,info,this,listener,params);
             }
         }
     }
@@ -137,7 +138,7 @@ public class AndroidWarpDrive implements IWarpEngine {
 
     @Override
     public void callPushService(String serviceName, IWarpDevice to, IWarpServiceListener listener,
-                                IBeam warpBeam, Object [] params, Object [] remoteParams)
+                                IBeam warpBeam, Object [] params, IWarpable[] remoteParams)
     {
         Class<? extends IWarpService> serviceClass = mContainer.getRegisteredWarpServiceByName(serviceName);
         if(serviceClass==null)
@@ -149,18 +150,18 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,warpBeam,listener,params);
+                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,params);
             }
             else
             {
-                mContainer.startClientRemoteWarpService(serviceClass,this,to,listener,params,remoteParams);
+                mContainer.startClientRemoteWarpService(serviceClass,info,this,to,listener,params,remoteParams);
             }
         }
     }
 
     @Override
     public void callPullService(String serviceName, IWarpDevice from, IWarpServiceListener listener,
-                                IBeam warpBeam, Object [] params, Object [] remoteParams)
+                                IBeam warpBeam, Object [] params, IWarpable [] remoteParams)
     {
         Class<? extends IWarpService> serviceClass = mContainer.getRegisteredWarpServiceByName(serviceName);
         if(serviceClass==null)
@@ -172,11 +173,11 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,warpBeam,listener,params);
+                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,params);
             }
             else
             {
-                mContainer.startClientRemoteWarpService(serviceClass,this,from,listener,params,remoteParams);
+                mContainer.startClientRemoteWarpService(serviceClass,info,this,from,listener,params,remoteParams);
             }
         }
     }

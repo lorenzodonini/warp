@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
+import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,15 +14,17 @@ import java.util.List;
 /**
  * Created by Lorenzo Donini on 5/13/2014.
  */
-public class AndroidDeviceAdapter extends BaseAdapter implements IViewObserver {
+public class AndroidDeviceAdapter extends BaseAdapter implements IViewLifecycleObserver {
     private List<IWarpInteractiveDevice> mDevices;
     private IWarpDeviceViewFactory mViewFactory;
+    private IWarpDeviceViewAdapter mViewAdapter;
     private boolean bNotifyOnChange;
 
     public AndroidDeviceAdapter(final Context context)
     {
         mDevices = new LinkedList<IWarpInteractiveDevice>();
         mViewFactory = new AndroidWarpDeviceViewFactory(context);
+        mViewAdapter = new AndroidWarpDeviceViewAdapter(context);
         bNotifyOnChange=true;
     }
 
@@ -49,7 +52,7 @@ public class AndroidDeviceAdapter extends BaseAdapter implements IViewObserver {
         IWarpInteractiveDevice device = getItem(position);
         if(device.getView() == null)
         {
-            View view = (View) mViewFactory.createWarpDeviceView(device.getWarpDevice());
+            View view = (View) mViewFactory.createWarpDeviceView(device.getWarpDevice(),device.getDeviceStatus());
             if(view == null)
             {
                 return null;
@@ -98,9 +101,18 @@ public class AndroidDeviceAdapter extends BaseAdapter implements IViewObserver {
     @Override
     public void onWarpDeviceStatusChanged(IWarpInteractiveDevice device)
     {
-        if(bNotifyOnChange)
-        {
-            notifyDataSetChanged();
-        }
+        mViewAdapter.adapt(device.getView(),device.getDeviceStatus(),device.getWarpDevice().getClass());
+    }
+
+    @Override
+    public void onWarpDeviceOperationProgressChanged(IWarpInteractiveDevice device)
+    {
+        mViewAdapter.adapt(device.getView(),device.getDeviceOperationProgress());
+    }
+
+    @Override
+    public void onWarpDeviceOperationLabelChanged(IWarpInteractiveDevice device)
+    {
+        mViewAdapter.adapt(device.getView(),device.getDeviceOperationLabel());
     }
 }

@@ -1,6 +1,6 @@
 package unibo.ing.warp.core.android;
 
-import unibo.ing.warp.core.IWarpBeamObserver;
+import unibo.ing.warp.core.IWarpServiceObserver;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 
@@ -9,13 +9,13 @@ import unibo.ing.warp.core.service.listener.IWarpServiceListener;
  */
 public class AndroidSequentialHandler extends AndroidHandler {
 
-    public AndroidSequentialHandler(IWarpServiceListener listener, IWarpBeamObserver observer)
+    public AndroidSequentialHandler(IWarpServiceListener listener, IWarpServiceObserver observer, long id)
     {
-        super(listener,observer);
+        super(listener,observer,id);
     }
 
     @Override
-    protected void onServiceCompleted(IWarpService servant)
+    protected void onServiceCompletedOperation(IWarpService servant)
     {
         IWarpServiceListener listener = getServiceListener();
         if(listener!=null)
@@ -25,7 +25,7 @@ public class AndroidSequentialHandler extends AndroidHandler {
     }
 
     @Override
-    protected void onServiceAbort(String message)
+    protected void onServiceAbortOperation(String message)
     {
         IWarpServiceListener listener = getServiceListener();
         if(listener!=null)

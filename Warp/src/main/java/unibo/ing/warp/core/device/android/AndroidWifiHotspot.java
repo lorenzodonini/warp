@@ -2,10 +2,8 @@ package unibo.ing.warp.core.device.android;
 
 import android.net.wifi.ScanResult;
 import unibo.ing.warp.core.WarpLocation;
-import unibo.ing.warp.core.device.IWarpDeviceRequestManager;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
-import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 
 /**
@@ -14,9 +12,9 @@ import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 public class AndroidWifiHotspot extends DefaultWarpDevice {
     private ScanResult mScanResult;
 
-    public AndroidWifiHotspot(IWarpDeviceRequestManager accessManager, ScanResult scanResult)
+    public AndroidWifiHotspot(ScanResult scanResult)
     {
-        super(accessManager);
+        super();
         mScanResult=scanResult;
     }
 
@@ -54,18 +52,6 @@ public class AndroidWifiHotspot extends DefaultWarpDevice {
     public Class<? extends IWarpService> getDisconnectServiceClass()
     {
         return null; //TODO: insert valid class
-    }
-
-    @Override
-    public void connect(IWarpServiceListener listener)
-    {
-        getWarpRequestManager().onConnectRequest(this,listener);
-    }
-
-    @Override
-    public void disconnect(IWarpServiceListener listener)
-    {
-        //TODO: to implement
     }
 
     @Override

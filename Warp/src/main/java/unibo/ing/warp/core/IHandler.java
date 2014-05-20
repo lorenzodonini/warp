@@ -8,5 +8,8 @@ import unibo.ing.warp.core.service.IWarpService;
 public interface IHandler {
     public void onServiceProgressUpdate(IWarpService servant);
     public void onServiceStatusChanged(IWarpService servant);
+    public void onServiceCompleted(IWarpService servant);
+    public void onServiceAbort(IWarpService servant, String message);
     public IWarpService.ServiceStatus getHandledServiceStatus();
+    public long getHandledServiceId();
 }

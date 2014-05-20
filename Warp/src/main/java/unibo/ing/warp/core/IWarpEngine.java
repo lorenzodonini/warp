@@ -3,6 +3,8 @@ package unibo.ing.warp.core;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
+import unibo.ing.warp.core.warpable.IWarpable;
+
 import java.util.Collection;
 
 /**
@@ -96,7 +98,7 @@ public interface IWarpEngine {
      * @param params  The optional paramaters passed to the service
      */
     public void callPushService(String serviceName, IWarpDevice to, IWarpServiceListener listener,
-                                IBeam warpBeam, Object[] params, Object[] remoteParams);
+                                IBeam warpBeam, Object[] params, IWarpable[] remoteParams);
 
     /**
      * Calls a Pull Service, indentified by a service name that needs to be passed as
@@ -112,7 +114,7 @@ public interface IWarpEngine {
      * @param params  The optional paramaters passed to the service
      */
     public void callPullService(String serviceName, IWarpDevice from, IWarpServiceListener listener,
-                                IBeam warpBeam, Object[] params, Object[] remoteParams);
+                                IBeam warpBeam, Object[] params, IWarpable[] remoteParams);
 
     public void startEngine();
     public void stopEngine();

@@ -60,16 +60,16 @@ public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
         IWarpInteractiveDevice interactiveDevices [] = new IWarpInteractiveDevice[scanResults.size()];
         WifiInfo connectionInfo = wifiManager.getConnectionInfo();
         AndroidWifiHotspot device;
+        IWarpInteractiveDevice.WarpDeviceStatus status;
         int i=0;
         for(ScanResult scanResult : scanResults)
         {
-            device = new AndroidWifiHotspot(warpAccessManager,scanResult);
+            device = new AndroidWifiHotspot(scanResult);
             //Checking if already connected to the found device
-            if(connectionInfo != null && connectionInfo.getSSID().equals("\""+device.getDeviceName()+"\""))
-            {
-                device.setConnected(true);
-            }
-            interactiveDevices[i++] = new AndroidInteractiveDevice(device);
+            status = (connectionInfo != null && connectionInfo.getSSID().
+                    equals("\""+device.getDeviceName()+"\"")) ? IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED
+                    : IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED;
+            interactiveDevices[i++] = new AndroidInteractiveDevice(warpAccessManager,status,device);
         }
         warpAccessManager.getDeviceManager().addWarpDevices(
                 interactiveDevices, AndroidWifiHotspot.class, true);

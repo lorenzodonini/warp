@@ -162,8 +162,8 @@ public class PushObjectService extends DefaultWarpService {
     public Object[] getCurrentProgress()
     {
         Object result [] = new Object[1];
-
-        result[0]=getPercentProgress();
+        //TODO: make it somewhat better
+        result[0]=getCurrentPercentProgress();
         return result;
     }
 }

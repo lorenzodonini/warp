@@ -56,6 +56,8 @@ public interface IWarpService {
      */
     public void provideService(IBeam warpBeam, Object context, Object[] params) throws Exception;
 
+    public void stopService();
+
     /**
      * Sets an IWarpServiceListener Object inside the IWarpService. This listener object
      * will automatically receive a callback from the service once the procedure is
@@ -77,9 +79,13 @@ public interface IWarpService {
      * @return  Returns any result the service may have produced during it's subroutine. In case
      * the service didn't produce any results, null is returned.
      */
+    public IHandler getWarpServiceHandler();
+
     public Object [] getResult();
 
     public Object [] getCurrentProgress();
+
+    public int getCurrentPercentProgress();
 
     public ServiceStatus getServiceStatus();
 

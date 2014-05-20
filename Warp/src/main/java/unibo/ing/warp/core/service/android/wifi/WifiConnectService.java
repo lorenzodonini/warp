@@ -16,17 +16,20 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
  * Date: 10/11/13
  * Time: 18:27
  */
-@WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="connectToAccessPoint", target = WarpServiceInfo.Target.ANDROID)
+@WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="connectToAccessPoint", target =
+        WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT)
 public class WifiConnectService extends DefaultWarpService {
     private boolean bConnected;
     private BroadcastReceiver mReceiver;
     private WifiConfiguration mTargetConfiguration;
+    public static final String CONNECTING = "Connecting...";
+    public static final String CONNECTED = "Connected";
+    public static final String FAILED = "Connection failed";
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
         WifiManager wifiManager;
-        WifiConfiguration wifiConfiguration;
         int networkId;
 
         checkOptionalParameters(params,2);
@@ -37,8 +40,6 @@ public class WifiConnectService extends DefaultWarpService {
         networkId=(Integer)params[1];
         wifiManager=(WifiManager)androidContext.getSystemService(Context.WIFI_SERVICE);
 
-        setPercentProgress(0);
-        getWarpServiceHandler().onServiceProgressUpdate(this);
         bConnected=performConnect(wifiManager,mTargetConfiguration,networkId);
     }
 
@@ -62,6 +63,8 @@ public class WifiConnectService extends DefaultWarpService {
         }
         setupBroadcastReceiver();
         manager.setWifiEnabled(true);
+        setPercentProgress(10);
+        getWarpServiceHandler().onServiceProgressUpdate(this);
         return manager.enableNetwork(networkId,true);
     }
 
@@ -74,7 +77,10 @@ public class WifiConnectService extends DefaultWarpService {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-
+                if(action == null)
+                {
+                    return;
+                }
                 if(action.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION))
                 {
                     bConnected=intent.getBooleanExtra(WifiManager.EXTRA_SUPPLICANT_CONNECTED,false);
@@ -94,26 +100,26 @@ public class WifiConnectService extends DefaultWarpService {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
         bConnected = info.getNetworkId() == mTargetConfiguration.networkId;
-        setPercentProgress(100);
-        getWarpServiceHandler().onServiceProgressUpdate(this);
+        if(bConnected)
+        {
+            setPercentProgress(100);
+        }
+        else
+        {
+            setPercentProgress(0);
+        }
+        getWarpServiceHandler().onServiceCompleted(this);
     }
 
     @Override
     public Object[] getResult()
     {
-        return new Object [] {(bConnected) ? "Connected" : "Connection refused"};
+        return new Object [] {(bConnected) ? CONNECTED : FAILED};
     }
 
     @Override
     public Object[] getCurrentProgress()
     {
-        if(getPercentProgress()==100)
-        {
-            return getResult();
-        }
-        else
-        {
-            return new Object [] {"Connecting..."};
-        }
+        return new Object [] {CONNECTING};
     }
 }

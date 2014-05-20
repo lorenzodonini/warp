@@ -24,6 +24,12 @@ public abstract class DefaultWarpService implements IWarpService {
         mHandler=handler;
     }
 
+    @Override
+    public void stopService()
+    {
+    }
+
+    @Override
     public IHandler getWarpServiceHandler()
     {
         return mHandler;
@@ -47,7 +53,8 @@ public abstract class DefaultWarpService implements IWarpService {
         }
     }
 
-    protected int getPercentProgress()
+    @Override
+    public int getCurrentPercentProgress()
     {
         return percentProgress;
     }

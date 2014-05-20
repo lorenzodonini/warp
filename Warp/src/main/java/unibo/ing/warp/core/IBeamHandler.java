@@ -1,9 +1,6 @@
 package unibo.ing.warp.core;
 
-import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.IWarpService;
-
-import java.io.IOException;
 
 /**
  * Created by Lorenzo Donini on 5/2/2014.

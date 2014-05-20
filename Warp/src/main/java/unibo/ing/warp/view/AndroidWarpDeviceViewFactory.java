@@ -6,53 +6,102 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import unibo.ing.warp.R;
+import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.IWarpDevice;
-import unibo.ing.warp.core.device.android.AndroidP2PDevice;
-import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by lorenzodonini on 12/05/14.
  */
 public class AndroidWarpDeviceViewFactory implements IWarpDeviceViewFactory {
-    private Map<Class<? extends IWarpDevice>, Integer> mResourceIdMapping;
     private Context mContext;
 
     public AndroidWarpDeviceViewFactory(Context context)
     {
         mContext=context;
-        //TODO: populate the map somehow!!
-        mResourceIdMapping = new HashMap<Class<? extends IWarpDevice>, Integer>();
-        mResourceIdMapping.put(AndroidWifiHotspot.class,R.drawable.wifi_hotspot);
-        mResourceIdMapping.put(AndroidP2PDevice.class,R.drawable.p2p_device);
     }
 
     @Override
-    public Object createWarpDeviceView(IWarpDevice device)
+    public Object createWarpDeviceView(IWarpDevice device, IWarpInteractiveDevice.WarpDeviceStatus status)
     {
-        if(device != null)
+        if(device == null)
         {
-            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View view = inflater.inflate(R.layout.device_view,null);
-            if(view != null)
-            {
-                TextView deviceText = (TextView) view.findViewById(R.id.deviceText);
-                deviceText.setText(device.getDeviceName());
-
-                ImageView deviceIcon = (ImageView) view.findViewById(R.id.deviceIcon);
-                if(device.isConnected())
-                {
-                    deviceIcon.setImageResource(R.drawable.wifi_hotspot_connected);
-                }
-                else
-                {
-                    deviceIcon.setImageResource(mResourceIdMapping.get(device.getClass()));
-                }
-            }
-            return view;
+            return null;
         }
-        return null;
+        if(status == IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED)
+        {
+            return createViewForDisconnectedDevice(device);
+        }
+        else if(status == IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED)
+        {
+            return createViewForConnectedDevice(device);
+        }
+        else if(status == IWarpInteractiveDevice.WarpDeviceStatus.FAILED)
+        {
+            return createViewForRefusedDevice(device);
+        }
+        else
+        {
+            return createViewForConnectingDevice(device);
+        }
+    }
+
+    public View createViewForConnectedDevice(IWarpDevice device)
+    {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.device_view,null);
+        if(view != null)
+        {
+            TextView deviceText = (TextView) view.findViewById(R.id.deviceName);
+            deviceText.setText(device.getDeviceName());
+            ImageView deviceIcon = (ImageView) view.findViewById(R.id.deviceIcon);
+            deviceIcon.setImageResource(AndroidWarpDeviceResourcesLibrary.getDrawableResourceId(
+                    IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED, device.getClass()));
+        }
+        return view;
+    }
+
+    public View createViewForDisconnectedDevice(IWarpDevice device)
+    {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.device_view,null);
+        if(view != null)
+        {
+            TextView deviceText = (TextView) view.findViewById(R.id.deviceName);
+            deviceText.setText(device.getDeviceName());
+            ImageView deviceIcon = (ImageView) view.findViewById(R.id.deviceIcon);
+            deviceIcon.setImageResource(AndroidWarpDeviceResourcesLibrary.getDrawableResourceId(
+                    IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED, device.getClass()));
+        }
+        return view;
+    }
+
+    public View createViewForConnectingDevice(IWarpDevice device)
+    {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.device_view,null);
+        if(view != null)
+        {
+            TextView deviceText = (TextView) view.findViewById(R.id.deviceName);
+            deviceText.setText(device.getDeviceName());
+            ImageView deviceIcon = (ImageView) view.findViewById(R.id.deviceIcon);
+            deviceIcon.setImageResource(AndroidWarpDeviceResourcesLibrary.getDrawableResourceId(
+                    IWarpInteractiveDevice.WarpDeviceStatus.CONNECTING, device.getClass()));
+        }
+        return view;
+    }
+
+    public View createViewForRefusedDevice(IWarpDevice device)
+    {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.device_view,null);
+        if(view != null)
+        {
+            TextView deviceText = (TextView) view.findViewById(R.id.deviceName);
+            deviceText.setText(device.getDeviceName());
+            ImageView deviceIcon = (ImageView) view.findViewById(R.id.deviceIcon);
+            deviceIcon.setImageResource(AndroidWarpDeviceResourcesLibrary.getDrawableResourceId(
+                    IWarpInteractiveDevice.WarpDeviceStatus.FAILED, device.getClass()));
+        }
+        return view;
     }
 }

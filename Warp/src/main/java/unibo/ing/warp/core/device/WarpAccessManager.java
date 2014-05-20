@@ -8,7 +8,7 @@ import unibo.ing.warp.utils.WarpUtils;
 /**
  * Created by Lorenzo Donini on 5/7/2014.
  */
-public class WarpAccessManager implements IWarpDeviceRequestManager{
+public class WarpAccessManager implements IWarpDeviceRequestHandler {
     private IWarpLocalDevice mLocalDevice;
     private WarpDeviceManager mDeviceManager;
     private static String mAccessKey;
@@ -49,31 +49,28 @@ public class WarpAccessManager implements IWarpDeviceRequestManager{
 
     //Single Device Request Handlers
     @Override
-    public void onConnectRequest(IWarpDevice device, IWarpServiceListener listener)
+    public void onConnectRequest(DefaultWarpDevice device, IWarpServiceListener listener)
     {
-        if(!device.isConnected())
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(device.getConnectServiceClass());
+        if(info != null)
         {
-            WarpServiceInfo info = WarpUtils.getWarpServiceInfo(device.getConnectServiceClass());
-            if(info != null)
-            {
-                mLocalDevice.getWarpEngine().callLocalService(info.name(), listener, null);
-            }
+            mLocalDevice.getWarpEngine().callLocalService(info.name(), listener, null);
         }
     }
 
     @Override
-    public void onDisconnectRequest(IWarpDevice device, IWarpServiceListener listener)
+    public void onDisconnectRequest(DefaultWarpDevice device, IWarpServiceListener listener)
     {
         //TODO: implement please!
     }
 
     @Override
-    public void onServicesLookupRequest(IWarpDevice device, IWarpServiceListener listener)
+    public void onServicesLookupRequest(DefaultWarpDevice device, IWarpServiceListener listener)
     {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(LookupService.class);
         if(info != null)
         {
-            mLocalDevice.getWarpEngine().callLocalService(info.name(), listener, null);
+            mLocalDevice.getWarpEngine().callPullService(info.name(),device,listener,null,null,null);
         }
     }
 }

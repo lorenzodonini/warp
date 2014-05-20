@@ -4,6 +4,7 @@ import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
+import unibo.ing.warp.core.warpable.IWarpable;
 
 import java.util.Collection;
 
@@ -22,11 +23,11 @@ public interface IWarpServiceContainer {
     public boolean isWarpServiceRunning(String serviceName);
     public int getWarpServiceRunningInstances(String serviceName);
     public IWarpService.ServiceStatus getWarpServiceStatus(String serviceName);
-    public void startLocalWarpService(Class<? extends IWarpService> serviceClass, IWarpEngine callerEngine,
-                                      IWarpServiceListener listener, Object[] params);
-    public void startClientRemoteWarpService(Class<? extends IWarpService> serviceClass, IWarpEngine callerEngine,
-                                             IWarpDevice target, IWarpServiceListener listener, Object[] params,
-                                             Object[] remoteParams);
-    public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass, IBeam warpBeam,
-                                             IWarpServiceListener listener, Object[] params);
+    public void startLocalWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
+                    IWarpEngine callerEngine, IWarpServiceListener listener, Object[] params);
+    public void startClientRemoteWarpService(Class<? extends IWarpService> serviceClass,
+                    WarpServiceInfo serviceInfo, IWarpEngine callerEngine, IWarpDevice target,
+                    IWarpServiceListener listener, Object[] params, IWarpable[] remoteParams);
+    public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass,
+                    WarpServiceInfo serviceInfo, IBeam warpBeam, IWarpServiceListener listener, Object[] params);
 }

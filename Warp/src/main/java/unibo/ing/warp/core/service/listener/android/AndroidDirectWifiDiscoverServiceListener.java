@@ -56,8 +56,8 @@ public class AndroidDirectWifiDiscoverServiceListener extends DefaultWarpService
         for(WifiP2pDevice p2pDevice: p2pDevices)
         {
             //TODO: beware! no WarpLocation set right now :(
-            interactiveDevices[i++] = new AndroidInteractiveDevice(
-                    new AndroidP2PDevice(warpAccessManager,null,p2pDevice));
+            interactiveDevices[i++] = new AndroidInteractiveDevice(warpAccessManager,
+                    new AndroidP2PDevice(null,p2pDevice));
         }
         warpAccessManager.getDeviceManager().addWarpDevices(
                 interactiveDevices,AndroidP2PDevice.class,true);

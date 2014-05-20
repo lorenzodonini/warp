@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
@@ -73,16 +72,18 @@ public class WifiScanService extends DefaultWarpService {
     private synchronized void setEnabled(boolean enabled)
     {
         bEnabled=enabled;
-        if(!enabled && mReceiver != null)
+    }
+
+    @Override
+    public void stopService()
+    {
+        setEnabled(false);
+        if(mReceiver != null)
         {
             Context context = (Context) getContext();
             context.unregisterReceiver(mReceiver);
+            mReceiver=null;
         }
-    }
-
-    public void stopService()
-    {
-        bEnabled=false;
     }
 
     private void onScanResultsAvailable()

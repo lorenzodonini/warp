@@ -1,8 +1,11 @@
 package unibo.ing.warp.core.device;
 
+import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
-import unibo.ing.warp.view.IViewObserver;
+import unibo.ing.warp.view.IViewLifecycleObserver;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * User: lorenzodonini
@@ -10,17 +13,17 @@ import java.util.*;
  * Time: 13:46
  */
 public class WarpDeviceManager {
-    private IViewObserver mViewObserver;
-    private Map<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>> mWarpDevices;
+    private IViewLifecycleObserver mViewObserver;
+    private ConcurrentMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>> mWarpDevices;
     private int mSize;
 
     public WarpDeviceManager()
     {
-        mWarpDevices = new HashMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>>();
+        mWarpDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>>();
         mSize=0;
     }
 
-    public void setViewObserver(IViewObserver observer)
+    public void setViewObserver(IViewLifecycleObserver observer)
     {
         mViewObserver = observer;
     }
@@ -98,6 +101,7 @@ public class WarpDeviceManager {
                 if(mViewObserver != null)
                 {
                     mViewObserver.onWarpDeviceRemoved(oldDevice);
+                    ((DefaultWarpInteractiveDevice)oldDevice).setViewObserver(null);
                 }
             }
         }
@@ -115,13 +119,7 @@ public class WarpDeviceManager {
                 if(newDevice.getWarpDevice().getDeviceName().equals(oldDevice.getWarpDevice().getDeviceName()))
                 {
                     found=true;
-                    oldDevice.getWarpDevice().updateAbstractDevice(newDevice.getWarpDevice().getAbstractDevice());
-                    boolean newConnected = newDevice.getWarpDevice().isConnected();
-                    if(newConnected != oldDevice.getWarpDevice().isConnected())
-                    {
-                        oldDevice.getWarpDevice().setConnected(newConnected);
-                        oldDevice.setView(null);
-                    }
+                    oldDevice.updateDeviceData(newDevice);
                     break;
                 }
             }
@@ -132,6 +130,7 @@ public class WarpDeviceManager {
                 if(mViewObserver != null)
                 {
                     mViewObserver.onWarpDeviceAdded(newDevice);
+                    ((DefaultWarpInteractiveDevice)newDevice).setViewObserver(mViewObserver);
                 }
             }
         }
@@ -151,13 +150,7 @@ public class WarpDeviceManager {
             {
                 if(oldDevice.getWarpDevice().getDeviceName().equals(device.getWarpDevice().getDeviceName()))
                 {
-                    oldDevice.getWarpDevice().updateAbstractDevice(device.getWarpDevice().getAbstractDevice());
-                    boolean newConnected = device.getWarpDevice().isConnected();
-                    if(newConnected != oldDevice.getWarpDevice().isConnected())
-                    {
-                        oldDevice.getWarpDevice().setConnected(newConnected);
-                        oldDevice.setView(null);
-                    }
+                    oldDevice.updateDeviceData(device);
                     return;
                 }
             }
@@ -166,28 +159,6 @@ public class WarpDeviceManager {
             if(mViewObserver != null)
             {
                 mViewObserver.onWarpDeviceAdded(device);
-            }
-        }
-    }
-
-    public synchronized void updateDeviceStatus(Class<? extends IWarpDevice> devicesClass,
-                                    String deviceName, boolean connected)
-    {
-        Vector<IWarpInteractiveDevice> devices = mWarpDevices.get(devicesClass);
-        if(devices == null)
-        {
-            return;
-        }
-        for(IWarpInteractiveDevice device : devices)
-        {
-            if(("\""+device.getWarpDevice().getDeviceName()+"\"").equals(deviceName))
-            {
-                device.getWarpDevice().setConnected(connected);
-                device.setView(null);
-                if(mViewObserver != null)
-                {
-                    mViewObserver.onWarpDeviceStatusChanged(device);
-                }
             }
         }
     }
@@ -246,8 +217,10 @@ public class WarpDeviceManager {
         return null;
     }
 
-    public synchronized Vector<IWarpInteractiveDevice> getWarpDevicesByClass(Class<? extends IWarpDevice> devicesClass)
+    public synchronized IWarpInteractiveDevice [] getInteractiveDevicesByClass(
+            Class<? extends IWarpDevice> devicesClass)
     {
-        return mWarpDevices.get(devicesClass);
+        Vector<IWarpInteractiveDevice> devices = mWarpDevices.get(devicesClass);
+        return devices.toArray(new IWarpInteractiveDevice[devices.size()]);
     }
 }

@@ -50,8 +50,9 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
             public void onReceive(Context context, Intent intent)
             {
                 String action = intent.getAction();
-                if(action.equals(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION))
+                if(action != null && action.equals(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION))
                 {
+                    //TODO: can be handled differently
                     mDirectWifiManager.requestPeers(mChannel,mPeerListListener);
                 }
             }
@@ -102,8 +103,6 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
             if(wifiManager.isWifiEnabled())
             {
                 mDirectWifiManager.discoverPeers(mChannel,actionListener);
-                /*throw new Exception("DirectWifiDiscoverService.discoveryOperation: " +
-                        "Wifi module is currently inactive!");*/
             }
             Thread.sleep(discoverInterval);
         }

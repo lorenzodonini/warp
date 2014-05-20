@@ -3,10 +3,14 @@ package unibo.ing.warp.activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiInfo;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pManager;
+import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
+import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
+
 import java.util.Collection;
 
 /**
@@ -15,6 +19,54 @@ import java.util.Collection;
 public class AndroidNetworkStateManager extends BroadcastReceiver {
     private WarpAccessManager mWarpAccessManager;
     private WifiManager mWifiManager;
+    private WifiP2pManager mP2pManager;
+
+    public AndroidNetworkStateManager(WarpAccessManager accessManager, WifiManager wifiManager,
+                                      WifiP2pManager p2pManager)
+    {
+        mWarpAccessManager = accessManager;
+        mWifiManager = wifiManager;
+        mP2pManager = p2pManager;
+    }
+
+    private void disconnectWifiHotspot()
+    {
+        Collection<IWarpInteractiveDevice> devices = mWarpAccessManager.
+                getDeviceManager().getInteractiveDevicesByClass(AndroidWifiHotspot.class);
+        if(devices == null)
+        {
+            return;
+        }
+        for(IWarpInteractiveDevice device : devices)
+        {
+            if(device.getDeviceStatus()== IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED)
+            {
+                ((DefaultWarpInteractiveDevice)device).setDeviceStatus(
+                        IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED);
+                return;
+            }
+        }
+    }
+
+    private void connectWifiHotspot(String ssid)
+    {
+        Collection<IWarpInteractiveDevice> devices = mWarpAccessManager.
+                getDeviceManager().getInteractiveDevicesByClass(AndroidWifiHotspot.class);
+        if(devices == null)
+        {
+            return;
+        }
+        for(IWarpInteractiveDevice device : devices)
+        {
+            if(("\""+device.getWarpDevice().getDeviceName()+"\"").equals(ssid) &&
+                    device.getDeviceStatus()== IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED)
+            {
+                ((DefaultWarpInteractiveDevice)device).setDeviceStatus(
+                        IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED);
+                return;
+            }
+        }
+    }
 
     @Override
     public void onReceive(Context context, Intent intent)
@@ -24,19 +76,18 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
         {
             return;
         }
-        if(action.equals(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION))
+        if(action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION))
         {
-            boolean connected=intent.getBooleanExtra(WifiManager.EXTRA_SUPPLICANT_CONNECTED,false);
-            WifiInfo info = mWifiManager.getConnectionInfo();
-            Collection<IWarpInteractiveDevice> devices = mWarpAccessManager.
-                    getDeviceManager().getInteractiveDevices();
-            for(IWarpInteractiveDevice device : devices)
+            NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+            if(info != null)
             {
-                if(("\""+device.getWarpDevice().getDeviceName()+"\"").equals(info.getSSID()))
+                if(info.getState()== NetworkInfo.State.CONNECTED)
                 {
-                    device.getWarpDevice().setConnected(true);
-                    device.setView(null);
-                    return;
+                    connectWifiHotspot(info.getExtraInfo());
+                }
+                else if(info.getState()== NetworkInfo.State.DISCONNECTED)
+                {
+                    disconnectWifiHotspot();
                 }
             }
         }

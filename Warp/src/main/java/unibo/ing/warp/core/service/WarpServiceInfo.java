@@ -20,9 +20,12 @@ public @interface WarpServiceInfo {
     public enum Type { LOCAL, PUSH, PULL}
     public enum ServiceExecution { DEFAULT, SEQUENTIAL, CONCURRENT}
     public enum Target { ANDROID, JAVA, ALL}
+    public enum ServiceCompletion { EXPLICIT, IMPLICIT}
     Type type() default Type.LOCAL;
     ServiceExecution execution() default ServiceExecution.DEFAULT;
     Target target() default Target.ALL;
+    ServiceCompletion completion() default ServiceCompletion.IMPLICIT;
     String name();
+
     String [] dependencies() default "";
 }

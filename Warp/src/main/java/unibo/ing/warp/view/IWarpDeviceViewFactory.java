@@ -1,5 +1,6 @@
 package unibo.ing.warp.view;
 
+import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.IWarpDevice;
 
 /**
@@ -7,5 +8,5 @@ import unibo.ing.warp.core.device.IWarpDevice;
  */
 public interface IWarpDeviceViewFactory {
     //TODO: may wanna refactor it into IWarpDevice as a parameter instead of the class
-    public Object createWarpDeviceView(IWarpDevice device);
+    public Object createWarpDeviceView(IWarpDevice device, IWarpInteractiveDevice.WarpDeviceStatus status);
 }

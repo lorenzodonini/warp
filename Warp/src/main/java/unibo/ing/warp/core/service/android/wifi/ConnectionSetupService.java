@@ -18,7 +18,8 @@ import unibo.ing.warp.view.PasswordDialogFragment;
 /**
  * Created by cronic90 on 08/10/13.
  */
-@WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="wifiConnectionSetup", target = WarpServiceInfo.Target.ANDROID)
+@WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="wifiConnectionSetup",
+        target = WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT)
 public class ConnectionSetupService extends DefaultWarpService {
     private IWarpDevice mWifiAccessPoint;
     private WifiConfiguration mWifiConfiguration;
@@ -253,11 +254,6 @@ public class ConnectionSetupService extends DefaultWarpService {
         {
             Log.d("WIFI_CONFIG_BUILD", "Couldn't add network " + mWifiConfiguration.SSID);
         }
-        /* From now on the PushDevice will be able to connect to the configured network.
-        In case a connect() is called on the device even if no scan() was invoked before to
-        make sure the device is reachable, then the device will perform a scan() automatically,
-        following the AndroidWifiHotspot procedure. From the time this method is called, the
-        device is considered as configured and ready to connect to.
-         */
+        getWarpServiceHandler().onServiceCompleted(this);
     }
 }
