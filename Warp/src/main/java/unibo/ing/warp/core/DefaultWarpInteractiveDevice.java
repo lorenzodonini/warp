@@ -13,7 +13,7 @@ import java.util.LinkedList;
  * Created by Lorenzo Donini on 5/16/2014.
  */
 public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDevice {
-    private Collection<String> mServicesNames;
+    private Collection<WarpServiceInfo> mServices;
     private IWarpDeviceRequestHandler mRequestManager;
     private IViewObserver mViewObserver;
     private WarpDeviceStatus mDeviceStatus;
@@ -24,14 +24,14 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
     {
         mRequestManager=requestManager;
         mDeviceStatus=WarpDeviceStatus.DISCONNECTED;
-        mServicesNames = new LinkedList<String>();
+        mServices = new LinkedList<WarpServiceInfo>();
     }
 
     public DefaultWarpInteractiveDevice(IWarpDeviceRequestHandler requestManager, WarpDeviceStatus status)
     {
         mRequestManager=requestManager;
         mDeviceStatus=status;
-        mServicesNames = new LinkedList<String>();
+        mServices = new LinkedList<WarpServiceInfo>();
     }
 
     public void setViewObserver(IViewObserver observer)
@@ -40,61 +40,63 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
     }
 
     @Override
-    public synchronized Collection<String> getAvailableServicesNames(IWarpServiceListener listener)
+    public synchronized Collection<WarpServiceInfo> getAvailableServices(IWarpServiceListener listener)
     {
         if(mDeviceStatus == WarpDeviceStatus.CONNECTED)
         {
-            if(mServicesNames.size()==0)
+            if(mServices.size()==0)
             {
                 //Return only connect service
                 WarpServiceInfo info = WarpUtils.getWarpServiceInfo(((DefaultWarpDevice)
                         getWarpDevice()).getDisconnectServiceClass());
                 if(info != null)
                 {
-                    mServicesNames.add(info.name());
+                    mServices.add(info);
                 }
                 if(mRequestManager != null)
                 {
-                    mRequestManager.onServicesLookupRequest((DefaultWarpDevice)getWarpDevice(),listener);
+                    mRequestManager.onServicesLookupRequest(this,listener);
                 }
             }
         }
         else if(mDeviceStatus == WarpDeviceStatus.DISCONNECTED)
         {
-            if(mServicesNames.size()==0)
+            if(mServices.size()==0)
             {
                 //Return only connect service
                 WarpServiceInfo info = WarpUtils.getWarpServiceInfo(((DefaultWarpDevice)
                         getWarpDevice()).getConnectServiceClass());
                 if(info != null)
                 {
-                    mServicesNames.add(info.name());
+                    mServices.add(info);
                 }
             }
         }
-        return mServicesNames;
+        return mServices;
     }
 
     @Override
-    public synchronized void addAvailableServicesNames(Collection<String> servicesNames)
+    public synchronized void addAvailableServices(Collection<WarpServiceInfo> services)
     {
-        mServicesNames = servicesNames;
+        mServices.addAll(services);
     }
 
     @Override
     public void connect(IWarpServiceListener listener)
     {
-        DefaultWarpDevice device = (DefaultWarpDevice)getWarpDevice();
         if(mRequestManager != null)
         {
-            mRequestManager.onConnectRequest(device,listener);
+            mRequestManager.onConnectRequest(this,listener);
         }
     }
 
     @Override
     public void disconnect(IWarpServiceListener listener)
     {
-        //TODO: implement thanks!
+        if(mRequestManager != null)
+        {
+            mRequestManager.onDisconnectRequest(this,listener);
+        }
     }
 
     @Override
@@ -121,7 +123,7 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
         mDeviceStatus=status;
         if(changed)
         {
-            mServicesNames.clear();
+            mServices.clear();
             if(mViewObserver != null)
             {
                 mViewObserver.onWarpDeviceStatusChanged(this);

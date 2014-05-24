@@ -110,16 +110,67 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public int getWarpServiceRunningInstances(String serviceName)
+    public Collection<IWarpService> getWarpServiceRunningInstances()
     {
-        return mServicesIds.containsKey(serviceName) ? mServicesIds.get(serviceName).size() : 0;
+        return mRunningServices.values();
     }
 
     @Override
-    public IWarpService.ServiceStatus getWarpServiceStatus(String serviceName)
+    public IWarpService getRunningServiceInstanceById(long serviceId)
     {
-        //TODO: CORRECT?!?!
-        return null;
+        return mRunningServices.get(serviceId);
+    }
+
+    @Override
+    public long [] getRunningServicesIdsByName(String serviceName)
+    {
+        Collection<Long> ids = mServicesIds.get(serviceName);
+        if(ids == null)
+        {
+            return null;
+        }
+        long result [] = new long[ids.size()];
+        int i=0;
+        for(Long id: ids)
+        {
+            result[i++]=id;
+        }
+        return result;
+    }
+
+    @Override
+    public Collection<IWarpService> getWarpRunningServiceInstancesByName(String serviceName)
+    {
+        Collection<Long> ids = mServicesIds.get(serviceName);
+        if(ids == null)
+        {
+            return null;
+        }
+        List<IWarpService> result = new ArrayList<IWarpService>(ids.size());
+        for(long id: ids)
+        {
+            result.add(mRunningServices.get(id));
+        }
+        return result;
+    }
+
+    @Override
+    public synchronized void stopService(long serviceId)
+    {
+        IWarpService serviceToStop = mRunningServices.get(serviceId);
+        if(serviceToStop != null)
+        {
+            serviceToStop.stopService();
+            onServiceDestroy(serviceToStop);
+        }
+        //TODO: maybe return a boolean?!
+    }
+
+    @Override
+    public IWarpService.ServiceStatus getWarpServiceStatus(long serviceId)
+    {
+        IWarpService service = mRunningServices.get(serviceId);
+        return (service != null) ? service.getServiceStatus() : null;
     }
 
     @Override

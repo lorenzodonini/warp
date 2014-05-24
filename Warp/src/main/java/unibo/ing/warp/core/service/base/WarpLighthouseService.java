@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * Created by Lorenzo Donini on 5/17/2014.
  */
-@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL, execution =
+@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL, label="Lighthouse", execution =
         WarpServiceInfo.ServiceExecution.CONCURRENT,name="lightHouse")
 public class WarpLighthouseService extends DefaultWarpService {
     public static final int LISTEN_PORT=13837;

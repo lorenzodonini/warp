@@ -21,8 +21,11 @@ public interface IWarpServiceContainer {
     public Collection<String> getRegisteredWarpServicesNames();
     public Class<? extends IWarpService> getRegisteredWarpServiceByName(String serviceName);
     public boolean isWarpServiceRunning(String serviceName);
-    public int getWarpServiceRunningInstances(String serviceName);
-    public IWarpService.ServiceStatus getWarpServiceStatus(String serviceName);
+    public Collection<IWarpService> getWarpServiceRunningInstances();
+    public IWarpService getRunningServiceInstanceById(long serviceId);
+    public long [] getRunningServicesIdsByName(String serviceName);
+    public Collection<IWarpService> getWarpRunningServiceInstancesByName(String serviceName);
+    public IWarpService.ServiceStatus getWarpServiceStatus(long serviceId);
     public void startLocalWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
                     IWarpEngine callerEngine, IWarpServiceListener listener, Object[] params);
     public void startClientRemoteWarpService(Class<? extends IWarpService> serviceClass,
@@ -30,4 +33,5 @@ public interface IWarpServiceContainer {
                     IWarpServiceListener listener, Object[] params, IWarpable[] remoteParams);
     public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass,
                     WarpServiceInfo serviceInfo, IBeam warpBeam, IWarpServiceListener listener, Object[] params);
+    public void stopService(long serviceId);
 }

@@ -10,7 +10,6 @@ import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.core.warpable.WarpableInteger;
 import unibo.ing.warp.core.warpable.WarpableString;
 import unibo.ing.warp.utils.WarpUtils;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -21,7 +20,8 @@ import java.util.EnumSet;
  * Date: 16/11/13
  * Time: 01:34
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, target = WarpServiceInfo.Target.ALL, name="warpHandshake")
+@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label="Handshake",
+        target = WarpServiceInfo.Target.ALL, name="warpHandshake")
 public class WarpHandshakeService extends DefaultWarpService {
     private IBeam mWarpBeam =null;
     private String mErrorMessage = "TEST";
@@ -106,7 +106,7 @@ public class WarpHandshakeService extends DefaultWarpService {
 
     private boolean performServiceRequest(IBeam beam, IWarpService remoteService) throws IOException, JSONException
     {
-        IWarpable serviceName=null, response;
+        IWarpable serviceName, response;
 
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(remoteService.getClass());
         if(info != null)

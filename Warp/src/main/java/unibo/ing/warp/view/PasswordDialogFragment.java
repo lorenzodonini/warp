@@ -152,14 +152,13 @@ public class PasswordDialogFragment extends DialogFragment {
                 {
                     //We just call the callback method in case the listener is attached
                     mListener.onDialogNegativeClick(PasswordDialogFragment.this);
-                    dismiss();
                 }
             }
         });
 
-        if(getActivity()!=null)
+        if(getDialog() != null)
         {
-            getActivity().setTitle(mKeyType + TITLE);
+            getDialog().setTitle(mKeyType + TITLE);
         }
         return view;
     }

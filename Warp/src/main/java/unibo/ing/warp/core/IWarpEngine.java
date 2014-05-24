@@ -2,6 +2,9 @@ package unibo.ing.warp.core;
 
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
+import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 
@@ -74,7 +77,7 @@ public interface IWarpEngine {
      * @return  Returns the List of the Services base instances on the local endpoint. All
      * Services are returned, Local, Pull and Push. Returns null if the IWarpEngine is remote
      */
-    public Collection<IWarpService> getActiveServices();
+    public long [] getActiveServicesIdsByName(String serviceName);
     /**
      * Returns the IWarpService identified by the name passed as a parameter. The lookup
      * procedure is performed on the Services data structure contained in the IWarpEngine.
@@ -116,7 +119,11 @@ public interface IWarpEngine {
     public void callPullService(String serviceName, IWarpDevice from, IWarpServiceListener listener,
                                 IBeam warpBeam, Object[] params, IWarpable[] remoteParams);
 
+    public void stopService(long serviceId);
+
     public void startEngine();
     public void stopEngine();
     public IWarpServiceListener getDefaultListenerForService(String serviceName, Object [] values);
+    public IWarpServiceHandler getDefaultHandlerForService(String serviceName);
+    public WarpServiceHandlerManager getServiceHandlerManager();
 }

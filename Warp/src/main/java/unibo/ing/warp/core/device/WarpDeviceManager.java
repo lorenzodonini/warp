@@ -217,10 +217,22 @@ public class WarpDeviceManager {
         return null;
     }
 
+    public synchronized void removeWarpDevices(Class<? extends IWarpDevice> deviceClass)
+    {
+        Vector<IWarpInteractiveDevice> devices = mWarpDevices.remove(deviceClass);
+        if(devices != null && mViewObserver != null)
+        {
+            for(IWarpInteractiveDevice device : devices)
+            {
+                mViewObserver.onWarpDeviceRemoved(device);
+            }
+        }
+    }
+
     public synchronized IWarpInteractiveDevice [] getInteractiveDevicesByClass(
             Class<? extends IWarpDevice> devicesClass)
     {
         Vector<IWarpInteractiveDevice> devices = mWarpDevices.get(devicesClass);
-        return devices.toArray(new IWarpInteractiveDevice[devices.size()]);
+        return (devices != null) ? devices.toArray(new IWarpInteractiveDevice[devices.size()]) : null;
     }
 }

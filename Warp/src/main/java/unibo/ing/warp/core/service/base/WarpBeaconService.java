@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * Created by Lorenzo Donini on 5/17/2014.
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, execution =
+@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label = "Beacon", execution =
         WarpServiceInfo.ServiceExecution.CONCURRENT, name = "beacon")
 public class WarpBeaconService extends DefaultWarpService {
     private boolean bEnabled;

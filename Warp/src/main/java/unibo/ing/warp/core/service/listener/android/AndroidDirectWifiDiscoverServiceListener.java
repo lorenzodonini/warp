@@ -3,7 +3,6 @@ package unibo.ing.warp.core.service.listener.android;
 import android.net.wifi.p2p.WifiP2pDevice;
 import unibo.ing.warp.core.AndroidInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
-import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.android.AndroidP2PDevice;
 import unibo.ing.warp.core.service.IWarpService;

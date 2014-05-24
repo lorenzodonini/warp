@@ -1,6 +1,7 @@
 package unibo.ing.warp.core;
 
 import unibo.ing.warp.core.device.IWarpDevice;
+import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 
 import java.util.Collection;
@@ -14,8 +15,8 @@ public interface IWarpInteractiveDevice {
     public void setView(Object view);
     public void connect(IWarpServiceListener listener);
     public void disconnect(IWarpServiceListener listener);
-    public Collection<String> getAvailableServicesNames(IWarpServiceListener listener);
-    public void addAvailableServicesNames(Collection<String> servicesNames);
+    public Collection<WarpServiceInfo> getAvailableServices(IWarpServiceListener listener);
+    public void addAvailableServices(Collection<WarpServiceInfo> services);
     public WarpDeviceStatus getDeviceStatus();
     public int getDeviceOperationProgress();
     public String getDeviceOperationLabel();

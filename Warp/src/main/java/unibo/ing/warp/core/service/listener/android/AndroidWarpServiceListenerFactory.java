@@ -39,7 +39,8 @@ public class AndroidWarpServiceListenerFactory implements IWarpServiceListenerFa
     }
 
     @Override
-    public void addWarpServiceListenerMapping(String serviceName, Class<? extends DefaultWarpServiceListener> listenerClass)
+    public void addWarpServiceListenerMapping(String serviceName,
+                                              Class<? extends DefaultWarpServiceListener> listenerClass)
     {
         mListenerMap.put(serviceName,listenerClass);
     }

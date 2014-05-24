@@ -14,7 +14,7 @@ import java.io.IOException;
  * Date: 12/11/13
  * Time: 16:06
  */
-@WarpServiceInfo(type= WarpServiceInfo.Type.PUSH,name="warpObjectService")
+@WarpServiceInfo(type= WarpServiceInfo.Type.PUSH,name="warpObjectService",label = "Send Object")
 public class PushObjectService extends DefaultWarpService {
     private int mTotalTransferredBytes;
     private int mCallTransferredBytes;

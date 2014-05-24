@@ -5,6 +5,7 @@ import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
+import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
 
 /**
  * Created by cronic90 on 07/10/13.
@@ -51,7 +52,7 @@ public class AndroidWifiHotspot extends DefaultWarpDevice {
     @Override
     public Class<? extends IWarpService> getDisconnectServiceClass()
     {
-        return null; //TODO: insert valid class
+        return WifiDisconnectService.class;
     }
 
     @Override

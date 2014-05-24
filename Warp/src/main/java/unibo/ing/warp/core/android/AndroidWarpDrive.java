@@ -4,10 +4,13 @@ import android.content.Context;
 import unibo.ing.warp.core.*;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.*;
-import unibo.ing.warp.core.service.base.LookupService;
-import unibo.ing.warp.core.service.base.PushObjectService;
-import unibo.ing.warp.core.service.base.WarpDispatcherService;
-import unibo.ing.warp.core.service.base.WarpHandshakeService;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
+import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
+import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
+import unibo.ing.warp.core.service.android.wifi.WifiScanService;
+import unibo.ing.warp.core.service.base.*;
+import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWarpServiceListenerFactory;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
@@ -45,6 +48,7 @@ public class AndroidWarpDrive implements IWarpEngine {
     private Context mContext;
     private IWarpServiceContainer mContainer;
     private IWarpServiceListenerFactory mListenerFactory;
+    private WarpServiceHandlerManager mHandlerManager;
 
     /**
      * This constructor should be called for remote WarpDrives, since it doesn't set a Context,
@@ -60,12 +64,19 @@ public class AndroidWarpDrive implements IWarpEngine {
         }
         mContainer= new AndroidWarpServiceContainer();
         mListenerFactory = new AndroidWarpServiceListenerFactory();
+        mHandlerManager = new WarpServiceHandlerManager();
 
         //ADDING CORE SERVICES
         addWarpService(WarpDispatcherService.class);
         addWarpService(WarpHandshakeService.class);
         addWarpService(LookupService.class);
         addWarpService(PushObjectService.class);
+        //ADDING ADDITIONAL SERVICES
+        addWarpService(WifiScanService.class);
+        addWarpService(WifiConnectService.class);
+        addWarpService(WifiDisconnectService.class);
+        addWarpService(DirectWifiDiscoverService.class);
+        addWarpService(PushFileService.class);
     }
 
     @Override
@@ -84,10 +95,27 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             WarpServiceInfo info = mContainer.registerWarpService(serviceClass);
             Class<? extends DefaultWarpServiceListener> listenerClass =
-                    AndroidListenerMapping.getListenerClass(serviceClass);
+                    AndroidServicesMapping.getListenerClass(serviceClass);
             if(listenerClass != null)
             {
                 mListenerFactory.addWarpServiceListenerMapping(info.name(),listenerClass);
+            }
+            Class<? extends IWarpServiceHandler> handlerClass =
+                    AndroidServicesMapping.getHandlerClass(serviceClass);
+            if(handlerClass != null)
+            {
+                try{
+                    IWarpServiceHandler handler = handlerClass.newInstance();
+                    mHandlerManager.addServiceHandler(info.name(),handler);
+                }
+                catch (InstantiationException e)
+                {
+                    //TODO: error handling
+                }
+                catch (IllegalAccessException e)
+                {
+                    //TODO: error handling
+                }
             }
         }
     }
@@ -119,9 +147,10 @@ public class AndroidWarpDrive implements IWarpEngine {
         return mContainer.getRegisteredWarpServices();
     }
 
-    public Collection<IWarpService> getActiveServices()
+    @Override
+    public long [] getActiveServicesIdsByName(String serviceName)
     {
-        return null; //TODO: IMPLEMENT
+        return mContainer.getRunningServicesIdsByName(serviceName);
     }
 
     @Override
@@ -183,6 +212,12 @@ public class AndroidWarpDrive implements IWarpEngine {
     }
 
     @Override
+    public void stopService(long serviceId)
+    {
+        mContainer.stopService(serviceId);
+    }
+
+    @Override
     public void startEngine()
     {
         mContainer.startContainer();
@@ -203,5 +238,15 @@ public class AndroidWarpDrive implements IWarpEngine {
     public IWarpServiceListener getDefaultListenerForService(String serviceName, Object [] values)
     {
         return mListenerFactory.createWarpServiceListener(serviceName,values);
+    }
+
+    public IWarpServiceHandler getDefaultHandlerForService(String serviceName)
+    {
+        return mHandlerManager.getServiceHandlerByName(serviceName);
+    }
+
+    public WarpServiceHandlerManager getServiceHandlerManager()
+    {
+        return mHandlerManager;
     }
 }

@@ -6,13 +6,14 @@
     <item android:id="@+id/action_wifi"
           android:title="WiFi"
           android:orderInCategory="2"
-          android:showAsAction="ifRoom"/>
+          android:icon="@drawable/ic_action_wifi_disabled"
+          android:showAsAction="ifRoom|collapseActionView"/>
     <item android:id="@+id/action_p2p"
           android:title="P2P"
           android:orderInCategory="1"
-          android:showAsAction="always" />
+          android:showAsAction="always|collapseActionView" />
     <item android:id="@+id/action_upnp"
           android:title="UPnP"
           android:orderInCategory="3"
-          android:showAsAction="ifRoom" />
+          android:showAsAction="ifRoom|collapseActionView" />
 </menu>

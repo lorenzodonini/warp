@@ -15,7 +15,8 @@ import java.io.File;
 /**
  * Created by Lorenzo Donini on 5/7/2014.
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.PUSH, target = WarpServiceInfo.Target.ALL, name = "pushFile")
+@WarpServiceInfo(type = WarpServiceInfo.Type.PUSH, target = WarpServiceInfo.Target.ALL,
+        name = "pushFile", label = "Send File")
 public class PushFileService extends DefaultWarpService {
     private File mResultFile; //Available to receiver only (provideService)
     private long mTransferredBytes = 0;

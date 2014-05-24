@@ -47,10 +47,7 @@ public abstract class DefaultWarpService implements IWarpService {
 
     protected void setPercentProgress(int progress)
     {
-        if(progress <= 100 && progress >= 0)
-        {
-            percentProgress=progress;
-        }
+        percentProgress=progress;
     }
 
     @Override

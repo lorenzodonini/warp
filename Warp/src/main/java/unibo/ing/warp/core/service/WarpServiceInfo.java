@@ -26,6 +26,6 @@ public @interface WarpServiceInfo {
     Target target() default Target.ALL;
     ServiceCompletion completion() default ServiceCompletion.IMPLICIT;
     String name();
-
+    String label();
     String [] dependencies() default "";
 }

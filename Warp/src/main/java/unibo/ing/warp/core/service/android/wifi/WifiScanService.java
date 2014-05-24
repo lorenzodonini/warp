@@ -14,7 +14,7 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
  * Date: 10/11/13
  * Time: 22:03
  */
-@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL,name="scanService",
+@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL,name="scanService", label = "Scan WiFi",
         target = WarpServiceInfo.Target.ANDROID, execution = WarpServiceInfo.ServiceExecution.CONCURRENT)
 public class WifiScanService extends DefaultWarpService {
     private boolean bEnabled=false;

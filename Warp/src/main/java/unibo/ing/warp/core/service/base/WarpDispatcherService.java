@@ -20,7 +20,7 @@ import java.util.EnumSet;
  * Date: 15/11/13
  * Time: 19:14
  */
-@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL,execution =
+@WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL, label = "Dispatch", execution =
         WarpServiceInfo.ServiceExecution.CONCURRENT, name="serviceDispatcher")
 public class WarpDispatcherService extends DefaultWarpService {
     private IWarpEngine warpDrive;
@@ -37,6 +37,7 @@ public class WarpDispatcherService extends DefaultWarpService {
     {
         checkOptionalParameters(params,1);
         warpDrive=(IWarpEngine)params[0];
+        setContext(context);
         bEnabled=true;
 
         //Dispatching incoming requests

@@ -31,7 +31,7 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
 
     private void disconnectWifiHotspot()
     {
-        Collection<IWarpInteractiveDevice> devices = mWarpAccessManager.
+        IWarpInteractiveDevice [] devices = mWarpAccessManager.
                 getDeviceManager().getInteractiveDevicesByClass(AndroidWifiHotspot.class);
         if(devices == null)
         {
@@ -50,7 +50,7 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
 
     private void connectWifiHotspot(String ssid)
     {
-        Collection<IWarpInteractiveDevice> devices = mWarpAccessManager.
+        IWarpInteractiveDevice [] devices = mWarpAccessManager.
                 getDeviceManager().getInteractiveDevicesByClass(AndroidWifiHotspot.class);
         if(devices == null)
         {

@@ -9,6 +9,10 @@ import unibo.ing.warp.core.device.IWarpDevice;
 public interface IWarpDeviceViewAdapter {
     public static final int VIEW_OPERATION_PROGRESS = 0;
     public static final int VIEW_OPERATION_LABEL = 1;
+    public static final int PROGRESS_MIN = 0;
+    public static final int PROGRESS_MAX = 100;
+    public static final int PROGRESS_INDETERMINATE = -2;
+    public static final int PROGRESS_FAILED = -1;
 
     public void adapt(Object view, int operationProgress);
     public void adapt(Object view, String operationLabel);

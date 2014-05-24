@@ -1,7 +1,10 @@
 package unibo.ing.warp.core.device;
 
+import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.LookupService;
+import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.utils.WarpUtils;
 
@@ -49,28 +52,39 @@ public class WarpAccessManager implements IWarpDeviceRequestHandler {
 
     //Single Device Request Handlers
     @Override
-    public void onConnectRequest(DefaultWarpDevice device, IWarpServiceListener listener)
+    public void onConnectRequest(DefaultWarpInteractiveDevice device, IWarpServiceListener listener)
     {
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(device.getConnectServiceClass());
+        DefaultWarpDevice warpDevice = (DefaultWarpDevice) device.getWarpDevice();
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(warpDevice.getConnectServiceClass());
         if(info != null)
         {
-            mLocalDevice.getWarpEngine().callLocalService(info.name(), listener, null);
+            IWarpServiceHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
+            mLocalDevice.getWarpEngine().callLocalService(info.name(), listener,
+                    handler.getServiceParameters(device));
         }
     }
 
     @Override
-    public void onDisconnectRequest(DefaultWarpDevice device, IWarpServiceListener listener)
+    public void onDisconnectRequest(DefaultWarpInteractiveDevice device, IWarpServiceListener listener)
     {
-        //TODO: implement please!
+        DefaultWarpDevice warpDevice = (DefaultWarpDevice) device.getWarpDevice();
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(warpDevice.getDisconnectServiceClass());
+        if(info != null)
+        {
+            IWarpServiceHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
+            mLocalDevice.getWarpEngine().callLocalService(info.name(), listener,
+                    handler.getServiceParameters(device));
+        }
     }
 
     @Override
-    public void onServicesLookupRequest(DefaultWarpDevice device, IWarpServiceListener listener)
+    public void onServicesLookupRequest(DefaultWarpInteractiveDevice device, IWarpServiceListener listener)
     {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(LookupService.class);
         if(info != null)
         {
-            mLocalDevice.getWarpEngine().callPullService(info.name(),device,listener,null,null,null);
+            //TODO: take a look here!
+            //mLocalDevice.getWarpEngine().callPullService(info.name(),device,listener,null,null,null);
         }
     }
 }

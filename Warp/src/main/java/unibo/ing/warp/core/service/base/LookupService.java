@@ -12,7 +12,7 @@ import java.util.Collection;
  * Date: 23/11/13
  * Time: 18:52
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.PULL, name = "lookup")
+@WarpServiceInfo(type = WarpServiceInfo.Type.PULL, name = "lookup", label = "Lookup")
 public class LookupService extends DefaultWarpService {
     private String [] result;
 

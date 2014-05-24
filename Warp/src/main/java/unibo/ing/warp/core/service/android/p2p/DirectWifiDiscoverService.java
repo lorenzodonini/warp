@@ -23,7 +23,7 @@ import java.util.Collection;
  * Date: 25/11/13
  * Time: 01:11
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, name="p2pDiscovery",
+@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, name="p2pDiscovery", label = "WiFi-Direct Discovery",
         execution = WarpServiceInfo.ServiceExecution.CONCURRENT, target=WarpServiceInfo.Target.ANDROID)
 public class DirectWifiDiscoverService extends DefaultWarpService {
     private boolean bEnabled=false;
@@ -33,18 +33,23 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
     private PeerListListener mPeerListListener;
     private Collection<WifiP2pDevice> result;
 
-    //TODO: STOP SERVICE?!
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
         checkOptionalParameters(params,1);
         setContext(context);
         long interval = (Long)params[0];
-        //mChannel = (Channel)params[1]; //Channel has already been initialized
 
         //Logic starts now
         setEnabled(true);
-        initializePeerListener();
+        mPeerListListener=new PeerListListener() {
+            @Override
+            public void onPeersAvailable(WifiP2pDeviceList peers)
+            {
+                result=peers.getDeviceList();
+                onDiscoveredPeersHandler();
+            }
+        };
         mReceiver=new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent)
@@ -64,21 +69,6 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
         mDirectWifiManager=(WifiP2pManager)androidContext.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mDirectWifiManager.initialize((Context)getContext(),((Context)getContext()).getMainLooper(),null);
         discoveryOperation(interval);
-    }
-
-    private void initializePeerListener()
-    {
-        if(mPeerListListener==null)
-        {
-            mPeerListListener=new PeerListListener() {
-                @Override
-                public void onPeersAvailable(WifiP2pDeviceList peers)
-                {
-                    result=peers.getDeviceList();
-                    onDiscoveredPeersHandler();
-                }
-            };
-        }
     }
 
     private void discoveryOperation(long discoverInterval) throws Exception
@@ -105,6 +95,17 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
                 mDirectWifiManager.discoverPeers(mChannel,actionListener);
             }
             Thread.sleep(discoverInterval);
+        }
+    }
+
+    @Override
+    public void stopService()
+    {
+        setEnabled(false);
+        if(mReceiver != null)
+        {
+            ((Context)getContext()).unregisterReceiver(mReceiver);
+            mReceiver=null;
         }
     }
 
