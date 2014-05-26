@@ -3,18 +3,18 @@ package unibo.ing.warp.core.service.handler.android;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.service.WarpServiceInfo;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.warpable.IWarpable;
 
 /**
  * Created by Lorenzo Donini on 5/21/2014.
  */
-public final class WifiConnectHandler implements IWarpServiceHandler {
+public final class WifiConnectResourcesHandler implements IWarpServiceResourcesHandler {
     private WarpAccessManager mAccessManager;
     private WarpServiceInfo mChainedServiceToCall;
     public static final int CHAIN_SERVICE_CALL_KEY = 2;
 
-    public WifiConnectHandler(WarpAccessManager manager)
+    public WifiConnectResourcesHandler(WarpAccessManager manager)
     {
         mAccessManager = manager;
     }

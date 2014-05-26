@@ -5,12 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
 
+import java.nio.channels.Channel;
 import java.util.Collection;
 
 /**
@@ -20,13 +24,15 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
     private WarpAccessManager mWarpAccessManager;
     private WifiManager mWifiManager;
     private WifiP2pManager mP2pManager;
+    private WifiP2pManager.Channel mChannel;
 
     public AndroidNetworkStateManager(WarpAccessManager accessManager, WifiManager wifiManager,
-                                      WifiP2pManager p2pManager)
+                                      WifiP2pManager p2pManager, WifiP2pManager.Channel channel)
     {
         mWarpAccessManager = accessManager;
         mWifiManager = wifiManager;
         mP2pManager = p2pManager;
+        mChannel = channel;
     }
 
     private void disconnectWifiHotspot()
@@ -89,6 +95,20 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
                 {
                     disconnectWifiHotspot();
                 }
+            }
+        }
+        else if(action.equals(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION))
+        {
+            NetworkInfo info = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+            WifiP2pInfo p2pInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO);
+            if(p2pInfo != null && p2pInfo.groupFormed)
+            {
+                mP2pManager.requestGroupInfo(mChannel,new WifiP2pManager.GroupInfoListener() {
+                    @Override
+                    public void onGroupInfoAvailable(WifiP2pGroup group) {
+                        Collection<WifiP2pDevice> devices = group.getClientList();
+                    }
+                });
             }
         }
     }

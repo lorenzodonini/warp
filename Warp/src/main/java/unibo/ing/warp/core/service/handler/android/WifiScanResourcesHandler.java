@@ -3,13 +3,13 @@ package unibo.ing.warp.core.service.handler.android;
 import android.net.wifi.WifiManager;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.warpable.IWarpable;
 
 /**
  * Created by Lorenzo Donini on 5/22/2014.
  */
-public final class WifiScanHandler implements IWarpServiceHandler {
+public final class WifiScanResourcesHandler implements IWarpServiceResourcesHandler {
     //LISTENER
     private WarpAccessManager mAccessManager;
     private WifiManager mWifiManager;
@@ -19,7 +19,7 @@ public final class WifiScanHandler implements IWarpServiceHandler {
     public static final int DISCOVER_INTERVAL_KEY = 0;
     public static final int WIFI_FORCE_ENABLE_KEY = 1;
 
-    public WifiScanHandler(WarpAccessManager accessManager, WifiManager wifiManager)
+    public WifiScanResourcesHandler(WarpAccessManager accessManager, WifiManager wifiManager)
     {
         mAccessManager=accessManager;
         mWifiManager=wifiManager;

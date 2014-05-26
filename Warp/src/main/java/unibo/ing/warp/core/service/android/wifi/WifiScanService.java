@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Looper;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
@@ -19,6 +21,7 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
 public class WifiScanService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;
+    private Handler mHandler;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
@@ -35,9 +38,11 @@ public class WifiScanService extends DefaultWarpService {
                 onScanResultsAvailable();
             }
         };
+        Looper.prepare();
+        mHandler = new Handler();
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        androidContext.registerReceiver(mReceiver,filter);
+        androidContext.registerReceiver(mReceiver,filter,null,mHandler);
         setEnabled(true);
         scanOperation(discoverInterval, forceEnable);
     }
@@ -57,11 +62,13 @@ public class WifiScanService extends DefaultWarpService {
             //We can forcefully enable WiFi
             manager.setWifiEnabled(true);
         }
-        while (isEnabled())
+        manager.startScan();
+        Looper.loop();
+        /*while (isEnabled())
         {
             manager.startScan();
-            Thread.sleep(discoverInterval);
-        }
+            Thread.sleep(180000);
+        }*/
     }
 
     private synchronized boolean isEnabled()

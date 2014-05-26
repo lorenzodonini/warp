@@ -6,7 +6,7 @@ import unibo.ing.warp.core.warpable.IWarpable;
 /**
  * Created by Lorenzo Donini on 5/21/2014.
  */
-public final class LookupServiceHandler implements IWarpServiceHandler {
+public final class LookupServiceResourcesHandler implements IWarpServiceResourcesHandler {
     @Override
     public Object[] getServiceListenerParameters(IWarpInteractiveDevice target)
     {

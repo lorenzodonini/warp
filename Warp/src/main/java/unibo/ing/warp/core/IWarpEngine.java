@@ -2,9 +2,8 @@ package unibo.ing.warp.core;
 
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
-import unibo.ing.warp.core.service.WarpServiceInfo;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
-import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
+import unibo.ing.warp.core.service.handler.WarpServiceResourcesHandlerManager;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 
@@ -124,6 +123,6 @@ public interface IWarpEngine {
     public void startEngine();
     public void stopEngine();
     public IWarpServiceListener getDefaultListenerForService(String serviceName, Object [] values);
-    public IWarpServiceHandler getDefaultHandlerForService(String serviceName);
-    public WarpServiceHandlerManager getServiceHandlerManager();
+    public IWarpServiceResourcesHandler getDefaultHandlerForService(String serviceName);
+    public WarpServiceResourcesHandlerManager getServiceHandlerManager();
 }

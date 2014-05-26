@@ -51,8 +51,7 @@ public class DirectWifiConnectService extends DefaultWarpService {
             //TODO: do something!
             throw new Exception("bla");
         }
-
-
+        setupBroadcastReceiver();
         manager.connect(mChannel,p2pConfig,new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess()
@@ -100,8 +99,6 @@ public class DirectWifiConnectService extends DefaultWarpService {
                         default:
                             break;
                     }
-                    /*WifiP2pInfo info = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO);
-                    WifiP2pGroup group = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_GROUP);*/
                 }
             }
         };

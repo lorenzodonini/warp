@@ -2,13 +2,13 @@ package unibo.ing.warp.core.service.handler.android;
 
 import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.warpable.IWarpable;
 
 /**
  * Created by Lorenzo Donini on 5/22/2014.
  */
-public final class WifiDisconnectHandler implements IWarpServiceHandler{
+public final class WifiDisconnectResourcesHandler implements IWarpServiceResourcesHandler {
     @Override
     public Object[] getServiceListenerParameters(IWarpInteractiveDevice target)
     {

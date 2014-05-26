@@ -7,7 +7,7 @@ import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
@@ -59,7 +59,7 @@ public class AndroidWifiConnectServiceListener extends DefaultWarpServiceListene
     private void startChainService()
     {
         IWarpEngine warpDrive = accessManager.getLocalDevice().getWarpEngine();
-        IWarpServiceHandler serviceHandler = warpDrive.getDefaultHandlerForService(chainServiceToCall.name());
+        IWarpServiceResourcesHandler serviceHandler = warpDrive.getDefaultHandlerForService(chainServiceToCall.name());
         Object [] listenerParams = serviceHandler.getServiceListenerParameters(warpDevice);
         Object [] params = serviceHandler.getServiceParameters(warpDevice);
         if(chainServiceToCall.type() == WarpServiceInfo.Type.LOCAL)

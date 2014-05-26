@@ -3,8 +3,7 @@ package unibo.ing.warp.core.device;
 import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.LookupService;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
-import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.utils.WarpUtils;
 
@@ -58,7 +57,7 @@ public class WarpAccessManager implements IWarpDeviceRequestHandler {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(warpDevice.getConnectServiceClass());
         if(info != null)
         {
-            IWarpServiceHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
+            IWarpServiceResourcesHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
             mLocalDevice.getWarpEngine().callLocalService(info.name(), listener,
                     handler.getServiceParameters(device));
         }
@@ -71,7 +70,7 @@ public class WarpAccessManager implements IWarpDeviceRequestHandler {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(warpDevice.getDisconnectServiceClass());
         if(info != null)
         {
-            IWarpServiceHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
+            IWarpServiceResourcesHandler handler = mLocalDevice.getWarpEngine().getDefaultHandlerForService(info.name());
             mLocalDevice.getWarpEngine().callLocalService(info.name(), listener,
                     handler.getServiceParameters(device));
         }

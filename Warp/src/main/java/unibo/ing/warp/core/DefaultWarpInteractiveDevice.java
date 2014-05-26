@@ -59,7 +59,7 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
                 }
             }
         }
-        else if(mDeviceStatus == WarpDeviceStatus.DISCONNECTED)
+        else if(mDeviceStatus == WarpDeviceStatus.DISCONNECTED || mDeviceStatus == WarpDeviceStatus.FAILED)
         {
             if(mServices.size()==0)
             {

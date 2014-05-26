@@ -11,6 +11,7 @@
     <item android:id="@+id/action_p2p"
           android:title="P2P"
           android:orderInCategory="1"
+          android:icon="@drawable/ic_action_p2p_disabled"
           android:showAsAction="always|collapseActionView" />
     <item android:id="@+id/action_upnp"
           android:title="UPnP"

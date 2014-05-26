@@ -6,7 +6,7 @@ import unibo.ing.warp.core.warpable.IWarpable;
 /**
  * Created by Lorenzo Donini on 5/21/2014.
  */
-public interface IWarpServiceHandler {
+public interface IWarpServiceResourcesHandler {
     public Object [] getServiceListenerParameters(IWarpInteractiveDevice target);
     public Object [] getServiceParameters(IWarpInteractiveDevice target);
     public IWarpable [] getServiceRemoteParameters();

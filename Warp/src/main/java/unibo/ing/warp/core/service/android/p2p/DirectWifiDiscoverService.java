@@ -36,9 +36,10 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,1);
+        checkOptionalParameters(params,2);
         setContext(context);
         long interval = (Long)params[0];
+        mChannel = (Channel)params[1];
 
         //Logic starts now
         setEnabled(true);
@@ -67,7 +68,6 @@ public class DirectWifiDiscoverService extends DefaultWarpService {
         Context androidContext = (Context)getContext();
         androidContext.registerReceiver(mReceiver, intentFilter);
         mDirectWifiManager=(WifiP2pManager)androidContext.getSystemService(Context.WIFI_P2P_SERVICE);
-        mChannel = mDirectWifiManager.initialize((Context)getContext(),((Context)getContext()).getMainLooper(),null);
         discoveryOperation(interval);
     }
 

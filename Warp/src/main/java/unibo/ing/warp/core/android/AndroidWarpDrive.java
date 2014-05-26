@@ -9,8 +9,8 @@ import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.base.*;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
-import unibo.ing.warp.core.service.handler.WarpServiceHandlerManager;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
+import unibo.ing.warp.core.service.handler.WarpServiceResourcesHandlerManager;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.android.AndroidWarpServiceListenerFactory;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
@@ -48,7 +48,7 @@ public class AndroidWarpDrive implements IWarpEngine {
     private Context mContext;
     private IWarpServiceContainer mContainer;
     private IWarpServiceListenerFactory mListenerFactory;
-    private WarpServiceHandlerManager mHandlerManager;
+    private WarpServiceResourcesHandlerManager mHandlerManager;
 
     /**
      * This constructor should be called for remote WarpDrives, since it doesn't set a Context,
@@ -64,7 +64,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         }
         mContainer= new AndroidWarpServiceContainer();
         mListenerFactory = new AndroidWarpServiceListenerFactory();
-        mHandlerManager = new WarpServiceHandlerManager();
+        mHandlerManager = new WarpServiceResourcesHandlerManager();
 
         //ADDING CORE SERVICES
         addWarpService(WarpDispatcherService.class);
@@ -100,12 +100,12 @@ public class AndroidWarpDrive implements IWarpEngine {
             {
                 mListenerFactory.addWarpServiceListenerMapping(info.name(),listenerClass);
             }
-            Class<? extends IWarpServiceHandler> handlerClass =
+            Class<? extends IWarpServiceResourcesHandler> handlerClass =
                     AndroidServicesMapping.getHandlerClass(serviceClass);
             if(handlerClass != null)
             {
                 try{
-                    IWarpServiceHandler handler = handlerClass.newInstance();
+                    IWarpServiceResourcesHandler handler = handlerClass.newInstance();
                     mHandlerManager.addServiceHandler(info.name(),handler);
                 }
                 catch (InstantiationException e)
@@ -240,12 +240,12 @@ public class AndroidWarpDrive implements IWarpEngine {
         return mListenerFactory.createWarpServiceListener(serviceName,values);
     }
 
-    public IWarpServiceHandler getDefaultHandlerForService(String serviceName)
+    public IWarpServiceResourcesHandler getDefaultHandlerForService(String serviceName)
     {
         return mHandlerManager.getServiceHandlerByName(serviceName);
     }
 
-    public WarpServiceHandlerManager getServiceHandlerManager()
+    public WarpServiceResourcesHandlerManager getServiceHandlerManager()
     {
         return mHandlerManager;
     }

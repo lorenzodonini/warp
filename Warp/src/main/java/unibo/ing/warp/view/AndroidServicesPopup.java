@@ -7,11 +7,9 @@ import android.widget.PopupMenu;
 import unibo.ing.warp.core.IWarpEngine;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
-import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.LookupService;
-import unibo.ing.warp.core.service.handler.IWarpServiceHandler;
-import unibo.ing.warp.core.service.listener.IWarpServiceListener;
+import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.utils.WarpUtils;
 
@@ -53,7 +51,7 @@ public class AndroidServicesPopup extends PopupMenu {
         }
         else
         {
-            IWarpServiceHandler serviceHandler = mWarpDrive.getDefaultHandlerForService(serviceInfo.name());
+            IWarpServiceResourcesHandler serviceHandler = mWarpDrive.getDefaultHandlerForService(serviceInfo.name());
             Object [] listenerParams = serviceHandler.getServiceListenerParameters(mDevice);
             Object [] params = serviceHandler.getServiceParameters(mDevice);
             IWarpable [] remoteParams = serviceHandler.getServiceRemoteParameters();
@@ -77,7 +75,7 @@ public class AndroidServicesPopup extends PopupMenu {
         DefaultWarpDevice device = (DefaultWarpDevice)mDevice.getWarpDevice();
         WarpServiceInfo connectService = WarpUtils.getWarpServiceInfo(device.getConnectServiceClass());
         WarpServiceInfo disconnectService = WarpUtils.getWarpServiceInfo(device.getDisconnectServiceClass());
-        IWarpServiceHandler serviceHandler = mWarpDrive.getDefaultHandlerForService(serviceInfo.name());
+        IWarpServiceResourcesHandler serviceHandler = mWarpDrive.getDefaultHandlerForService(serviceInfo.name());
         if(connectService.name().equals(serviceInfo.name()))
         {
             mDevice.connect(mWarpDrive.getDefaultListenerForService(connectService.name(),
@@ -106,7 +104,7 @@ public class AndroidServicesPopup extends PopupMenu {
 
     private void populateInnerStructure()
     {
-        IWarpServiceHandler lookupHandler = mWarpDrive.getDefaultHandlerForService(lookupService.name());
+        IWarpServiceResourcesHandler lookupHandler = mWarpDrive.getDefaultHandlerForService(lookupService.name());
         Object [] handlerParameters = (lookupHandler != null) ?
                 lookupHandler.getServiceListenerParameters(mDevice) : null;
         Collection<WarpServiceInfo> services = mDevice.getAvailableServices(mWarpDrive.
