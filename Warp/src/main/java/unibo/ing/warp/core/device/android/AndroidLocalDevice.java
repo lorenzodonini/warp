@@ -8,7 +8,6 @@ import unibo.ing.warp.core.android.AndroidWarpDrive;
 import unibo.ing.warp.core.device.IWarpLocalDevice;
 import unibo.ing.warp.core.service.base.LookupService;
 import unibo.ing.warp.core.service.base.PushObjectService;
-
 import java.net.InetAddress;
 
 /**
