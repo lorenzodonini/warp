@@ -4,6 +4,7 @@ import android.content.Context;
 import unibo.ing.warp.core.*;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.*;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiConnectService;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
@@ -76,6 +77,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         addWarpService(WifiConnectService.class);
         addWarpService(WifiDisconnectService.class);
         addWarpService(DirectWifiDiscoverService.class);
+        addWarpService(DirectWifiConnectService.class);
         addWarpService(PushFileService.class);
     }
 

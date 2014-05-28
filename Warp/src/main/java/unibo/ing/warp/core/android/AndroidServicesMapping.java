@@ -1,6 +1,7 @@
 package unibo.ing.warp.core.android;
 
 import unibo.ing.warp.core.service.IWarpService;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiConnectService;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
@@ -29,6 +30,7 @@ public class AndroidServicesMapping {
         listenerMapping.put(DirectWifiDiscoverService.class, AndroidDirectWifiDiscoverServiceListener.class);
         listenerMapping.put(WifiConnectService.class, AndroidWifiConnectServiceListener.class);
         listenerMapping.put(WifiDisconnectService.class, AndroidWifiDisconnectServiceListener.class);
+        listenerMapping.put(DirectWifiConnectService.class, AndroidDirectWifiConnectServiceListener.class);
 
         handlerMapping = new HashMap<Class<? extends IWarpService>, Class<? extends IWarpServiceResourcesHandler>>();
         handlerMapping.put(WifiDisconnectService.class, WifiDisconnectResourcesHandler.class);

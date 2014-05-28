@@ -12,6 +12,7 @@ import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 
 /**
  * Created by Lorenzo Donini on 5/23/2014.
@@ -52,6 +53,10 @@ public class DirectWifiConnectService extends DefaultWarpService {
             throw new Exception("bla");
         }
         setupBroadcastReceiver();
+        //Updating view
+        setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_INDETERMINATE);
+        getWarpServiceHandler().onServiceProgressUpdate(this);
+
         manager.connect(mChannel,p2pConfig,new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess()
@@ -64,6 +69,7 @@ public class DirectWifiConnectService extends DefaultWarpService {
             public void onFailure(int reason)
             {
                 bConnected=false;
+                getWarpServiceHandler().onServiceAbort(DirectWifiConnectService.this,"Error!");
                 //TODO: handle error!
             }
         });
@@ -90,24 +96,74 @@ public class DirectWifiConnectService extends DefaultWarpService {
                         return;
                     }
                     NetworkInfo.DetailedState state = netInfo.getDetailedState();
-                    switch (state)
+                    if(state == NetworkInfo.DetailedState.CONNECTED)
                     {
-                        case CONNECTED:
-                            break;
-                        case OBTAINING_IPADDR:
-                            break;
-                        default:
-                            break;
+                        WifiP2pManager manager = (WifiP2pManager)((Context)getContext())
+                                .getSystemService(Context.WIFI_P2P_SERVICE);
+                        manager.requestGroupInfo(mChannel,new WifiP2pManager.GroupInfoListener() {
+                            @Override
+                            public void onGroupInfoAvailable(WifiP2pGroup group)
+                            {
+                                onConnectedHandler(group);
+                            }
+                        });
+                    }
+                    else if(state == NetworkInfo.DetailedState.FAILED)
+                    {
+                        bConnected=false;
+                        setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_FAILED);
+                        ((Context)getContext()).unregisterReceiver(mReceiver);
+                        mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
+                        getWarpServiceHandler().onServiceCompleted(DirectWifiConnectService.this);
                     }
                 }
             }
         };
+        ((Context)getContext()).registerReceiver(mReceiver,filter);
     }
 
     @Override
     public void provideService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
         //Do nothing!
+    }
+
+    private void onConnectedHandler(WifiP2pGroup group)
+    {
+        Context context = (Context)getContext();
+        context.unregisterReceiver(mReceiver);
+        mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
+
+        WifiP2pDevice device = (WifiP2pDevice) mWifiDirectDevice.getAbstractDevice();
+        if(!group.isGroupOwner())
+        {
+            WifiP2pDevice ownerDevice = group.getOwner();
+            bConnected = device.deviceName.equals(ownerDevice.deviceName)
+                    && device.deviceAddress.equals(ownerDevice.deviceAddress);
+            //TODO: what about the warp location?
+        }
+        else
+        {
+            bConnected=false;
+            for(WifiP2pDevice otherDevice : group.getClientList())
+            {
+                if(otherDevice.deviceName.equals(device.deviceName)
+                        && otherDevice.deviceAddress.equals(device.deviceAddress))
+                {
+                    bConnected=true;
+                    break;
+                }
+            }
+        }
+        if(bConnected)
+        {
+            setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_MAX);
+        }
+        else
+        {
+            setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_FAILED);
+        }
+        getWarpServiceHandler().onServiceCompleted(this);
     }
 
     @Override

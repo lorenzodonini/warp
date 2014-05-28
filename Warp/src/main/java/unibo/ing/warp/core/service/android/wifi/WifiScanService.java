@@ -21,6 +21,7 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
 public class WifiScanService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;
+    private Looper mLooper;
     private Handler mHandler;
 
     @Override
@@ -39,12 +40,13 @@ public class WifiScanService extends DefaultWarpService {
             }
         };
         Looper.prepare();
+        mLooper = Looper.myLooper();
         mHandler = new Handler();
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         androidContext.registerReceiver(mReceiver,filter,null,mHandler);
         setEnabled(true);
-        scanOperation(discoverInterval, forceEnable);
+        scanOperation(forceEnable);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class WifiScanService extends DefaultWarpService {
         //DO NOTHING SINCE THIS IS A LOCAL SERVICE
     }
 
-    private void scanOperation(long discoverInterval, boolean forceEnable) throws Exception
+    private void scanOperation(boolean forceEnable) throws Exception
     {
         Context context = (Context)getContext();
         WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -64,11 +66,6 @@ public class WifiScanService extends DefaultWarpService {
         }
         manager.startScan();
         Looper.loop();
-        /*while (isEnabled())
-        {
-            manager.startScan();
-            Thread.sleep(180000);
-        }*/
     }
 
     private synchronized boolean isEnabled()
@@ -84,7 +81,7 @@ public class WifiScanService extends DefaultWarpService {
     @Override
     public void stopService()
     {
-        setEnabled(false);
+        mLooper.quit();
         if(mReceiver != null)
         {
             Context context = (Context) getContext();

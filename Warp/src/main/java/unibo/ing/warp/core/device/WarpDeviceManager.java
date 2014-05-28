@@ -2,6 +2,7 @@ package unibo.ing.warp.core.device;
 
 import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpInteractiveDevice;
+import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.view.IViewLifecycleObserver;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,11 +16,13 @@ import java.util.concurrent.ConcurrentMap;
 public class WarpDeviceManager {
     private IViewLifecycleObserver mViewObserver;
     private ConcurrentMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>> mWarpDevices;
+    private ConcurrentMap<Class<? extends IWarpDevice>, Vector<String>> mBlackListDevices; //Names
     private int mSize;
 
     public WarpDeviceManager()
     {
         mWarpDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>>();
+        mBlackListDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, Vector<String>>();
         mSize=0;
     }
 
@@ -42,6 +45,7 @@ public class WarpDeviceManager {
                                     Class<? extends IWarpDevice> deviceClass, boolean removeOlder)
     {
         IWarpInteractiveDevice newDevices [] = (IWarpInteractiveDevice[]) devices.toArray();
+        Vector<String> blackList = mBlackListDevices.get(deviceClass);
         addWarpDevices(newDevices,deviceClass,removeOlder);
     }
 
@@ -134,6 +138,41 @@ public class WarpDeviceManager {
                 }
             }
         }
+    }
+
+    public synchronized void addBlackListDevice(Class<? extends IWarpDevice> deviceClass, String deviceName)
+    {
+        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        if(blackList == null)
+        {
+            blackList = new Vector<String>();
+            mBlackListDevices.put(deviceClass,blackList);
+        }
+        blackList.add(deviceName);
+    }
+
+    public synchronized void removeBlackListDevice(Class<? extends IWarpDevice> deviceClass, String deviceName)
+    {
+        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        if(blackList != null)
+        {
+            blackList.remove(deviceName);
+            if(blackList.size() == 0)
+            {
+                mBlackListDevices.remove(deviceClass);
+            }
+        }
+    }
+
+    public synchronized boolean isOnBlackList(IWarpInteractiveDevice device)
+    {
+        Class<? extends IWarpDevice> deviceClass = device.getWarpDevice().getClass();
+        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        if(blackList == null)
+        {
+            return false;
+        }
+        return blackList.contains(device.getWarpDevice().getDeviceName());
     }
 
     public synchronized void addDevice(IWarpInteractiveDevice device)

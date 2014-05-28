@@ -35,27 +35,27 @@
       <sourceFolder url="file://$MODULE_DIR$/Warp/build/source/buildConfig/test/debug" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/build/source/rs/test/debug" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/build/res/rs/test/debug" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/res" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/aidl" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/assets" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/rs" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/res" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/debug/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/res" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/aidl" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/assets" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/rs" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/res" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/assets" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/jni" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/Warp/src/instrumentTest/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/assets" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/jni" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Warp/src/androidTest/rs" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/Warp/build/apk" />
       <excludeFolder url="file://$MODULE_DIR$/Warp/build/assets" />
       <excludeFolder url="file://$MODULE_DIR$/Warp/build/bundles" />

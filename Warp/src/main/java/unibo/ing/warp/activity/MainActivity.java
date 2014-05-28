@@ -20,9 +20,11 @@ import unibo.ing.warp.core.device.android.AndroidLocalDevice;
 import unibo.ing.warp.core.device.android.AndroidP2PDevice;
 import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiConnectService;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.handler.*;
+import unibo.ing.warp.core.service.handler.android.DirectWifiConnectServiceResourcesHandler;
 import unibo.ing.warp.core.service.handler.android.DirectWifiDiscoverServiceResourcesHandler;
 import unibo.ing.warp.core.service.handler.android.WifiConnectResourcesHandler;
 import unibo.ing.warp.core.service.handler.android.WifiScanResourcesHandler;
@@ -49,7 +51,7 @@ public class MainActivity extends Activity {
         final WarpAccessManager manager = WarpAccessManager.getInstance(mAccessKey);
         final WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         final WifiP2pManager p2pManager = (WifiP2pManager)getSystemService(WIFI_P2P_SERVICE);
-        WifiP2pManager.Channel channel = p2pManager.initialize(this, getMainLooper(), null);
+        final WifiP2pManager.Channel channel = p2pManager.initialize(this, getMainLooper(), null);
 
         //Adding some service names
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WifiScanService.class);
@@ -80,6 +82,13 @@ public class MainActivity extends Activity {
                 DEFAULT_DISCOVER_INTERVAL+10000);
         discoverHandler.addServiceParameter(DirectWifiDiscoverServiceResourcesHandler.P2P_CHANNEL, channel);
         handlerManager.addServiceHandler(info.name(),discoverHandler);
+        //DirectWifiConnectHandler
+        info = WarpUtils.getWarpServiceInfo(DirectWifiConnectService.class);
+        DirectWifiConnectServiceResourcesHandler connectHandler =
+                new DirectWifiConnectServiceResourcesHandler(manager);
+        connectHandler.addServiceParameter(DirectWifiConnectServiceResourcesHandler.P2P_CHANNEL_KEY,channel);
+        connectHandler.addServiceParameter(DirectWifiConnectServiceResourcesHandler.P2P_OWNER_PRIORITY_KEY,15);
+        handlerManager.addServiceHandler(info.name(),connectHandler);
 
         //TODO: Add Non-core Services
 

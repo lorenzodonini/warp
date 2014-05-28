@@ -103,13 +103,24 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
             WifiP2pInfo p2pInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO);
             if(p2pInfo != null && p2pInfo.groupFormed)
             {
-                mP2pManager.requestGroupInfo(mChannel,new WifiP2pManager.GroupInfoListener() {
-                    @Override
-                    public void onGroupInfoAvailable(WifiP2pGroup group) {
-                        Collection<WifiP2pDevice> devices = group.getClientList();
-                    }
-                });
+                mP2pManager.requestGroupInfo(mChannel,new WarpGroupInfoListener(p2pInfo));
             }
+        }
+    }
+
+    private class WarpGroupInfoListener implements WifiP2pManager.GroupInfoListener {
+        private WifiP2pInfo mInfo;
+
+        public WarpGroupInfoListener(WifiP2pInfo info)
+        {
+            mInfo = info;
+        }
+
+        @Override
+        public void onGroupInfoAvailable(WifiP2pGroup group)
+        {
+            Collection<WifiP2pDevice> devices = group.getClientList();
+
         }
     }
 }
