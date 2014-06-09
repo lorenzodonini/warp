@@ -11,10 +11,11 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
-import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.android.DirectWifiDiscoverLauncher;
+import unibo.ing.warp.core.service.listener.android.DirectWifiDiscoverServiceListener;
 
 import java.util.Collection;
 
@@ -24,7 +25,8 @@ import java.util.Collection;
  * Time: 01:11
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, name="p2pDiscovery", label = "WiFi-Direct Discovery",
-        execution = WarpServiceInfo.ServiceExecution.CONCURRENT, target=WarpServiceInfo.Target.ANDROID)
+        execution = WarpServiceInfo.ServiceExecution.CONCURRENT, target=WarpServiceInfo.Target.ANDROID,
+        launcher = DirectWifiDiscoverLauncher.class, callListener = DirectWifiDiscoverServiceListener.class)
 public class DirectWifiDiscoverService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;

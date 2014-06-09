@@ -3,6 +3,8 @@ package unibo.ing.warp.core.service.base;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.LookupServiceLauncher;
+import unibo.ing.warp.core.service.listener.LookupServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.core.warpable.WarpableInteger;
 import unibo.ing.warp.core.warpable.WarpableString;
@@ -12,7 +14,8 @@ import java.util.Collection;
  * Date: 23/11/13
  * Time: 18:52
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.PULL, name = "lookup", label = "Lookup")
+@WarpServiceInfo(type = WarpServiceInfo.Type.PULL, name = "lookup", label = "Lookup",
+        launcher = LookupServiceLauncher.class, callListener = LookupServiceListener.class)
 public class LookupService extends DefaultWarpService {
     private String [] result;
 
@@ -42,14 +45,17 @@ public class LookupService extends DefaultWarpService {
     @Override
     public void provideService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
+        checkOptionalParameters(params,1);
+
+        @SuppressWarnings("unchecked")
+        Collection<String> servicesNames = (Collection<String>) params[0];
         IWarpable serviceName = new WarpableString();
         IWarpable serviceNum = new WarpableInteger();
-        Collection<String> services = warpBeam.getLocalWarpEngine().getServicesNames();
 
-        serviceNum.setValue(services.size());
+        serviceNum.setValue(servicesNames.size());
         warpBeam.beamWarpable(serviceNum);
 
-        for(String service: services)
+        for(String service: servicesNames)
         {
             serviceName.setValue(service);
             warpBeam.beamWarpable(serviceName);

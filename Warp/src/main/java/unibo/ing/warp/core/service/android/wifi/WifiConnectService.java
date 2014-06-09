@@ -11,11 +11,12 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.android.WifiConnectLauncher;
+import unibo.ing.warp.core.service.listener.android.WifiConnectServiceListener;
 import unibo.ing.warp.view.DialogFragmentListener;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 import unibo.ing.warp.view.PasswordDialogFragment;
@@ -28,7 +29,8 @@ import java.util.List;
  * Time: 18:27
  */
 @WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="connectToAccessPoint", label = "Connect", target =
-        WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT)
+        WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT,
+        launcher = WifiConnectLauncher.class, callListener = WifiConnectServiceListener.class)
 public class WifiConnectService extends DefaultWarpService {
     private boolean bConnected;
     private BroadcastReceiver mReceiver;

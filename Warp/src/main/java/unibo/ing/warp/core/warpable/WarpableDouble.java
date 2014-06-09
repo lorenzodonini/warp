@@ -2,8 +2,7 @@ package unibo.ing.warp.core.warpable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.Socket;
+import java.nio.ByteBuffer;
 
 /**
  * Created with IntelliJ IDEA.

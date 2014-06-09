@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by Lorenzo Donini on 5/10/2014.
  */
-public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
+public final class WifiScanServiceListener extends DefaultWarpServiceListener {
     private WarpAccessManager warpAccessManager;
     private WifiManager wifiManager;
 
@@ -57,6 +57,7 @@ public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
         {
             return;
         }
+        WarpDeviceManager deviceManager = warpAccessManager.getDeviceManager();
         IWarpInteractiveDevice interactiveDevices [] = new IWarpInteractiveDevice[scanResults.size()];
         WifiInfo connectionInfo = wifiManager.getConnectionInfo();
         AndroidWifiHotspot device;
@@ -71,7 +72,7 @@ public class AndroidWifiScanServiceListener extends DefaultWarpServiceListener {
                     : IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED;
             interactiveDevices[i++] = new AndroidInteractiveDevice(warpAccessManager,status,device);
         }
-        warpAccessManager.getDeviceManager().addWarpDevices(
+        deviceManager.addWarpDevices(
                 interactiveDevices, AndroidWifiHotspot.class, true);
     }
 

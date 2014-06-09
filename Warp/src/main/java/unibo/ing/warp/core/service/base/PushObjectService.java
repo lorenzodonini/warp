@@ -4,6 +4,7 @@ import org.json.JSONException;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.PushObjectLauncher;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.core.warpable.WarpableInteger;
 import unibo.ing.warp.core.warpable.WarpableString;
@@ -14,7 +15,8 @@ import java.io.IOException;
  * Date: 12/11/13
  * Time: 16:06
  */
-@WarpServiceInfo(type= WarpServiceInfo.Type.PUSH,name="warpObjectService",label = "Send Object")
+@WarpServiceInfo(type= WarpServiceInfo.Type.PUSH,name="warpObjectService",label = "Send Object",
+        launcher = PushObjectLauncher.class)
 public class PushObjectService extends DefaultWarpService {
     private int mTotalTransferredBytes;
     private int mCallTransferredBytes;
@@ -37,7 +39,7 @@ public class PushObjectService extends DefaultWarpService {
         }
         setContext(context);
         mCallTransferredBytes=0;
-        objectsToSend=(IWarpable [])params;
+        objectsToSend=(IWarpable [])params[0];
         objectNum=new WarpableInteger(objectsToSend.length);
 
         try {

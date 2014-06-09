@@ -8,33 +8,51 @@ import android.net.NetworkInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.*;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
+import unibo.ing.warp.core.service.launcher.android.DirectWifiConnectLauncher;
+import unibo.ing.warp.core.service.launcher.android.DirectWifiPingLauncher;
+import unibo.ing.warp.core.service.listener.android.DirectWifiConnectServiceListener;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 
 /**
  * Created by Lorenzo Donini on 5/23/2014.
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, target = WarpServiceInfo.Target.ANDROID,
-        completion = WarpServiceInfo.ServiceCompletion.EXPLICIT, name = "directWifiConnect", label="Connect")
+        completion = WarpServiceInfo.ServiceCompletion.EXPLICIT, name = "directWifiConnect", label="Connect",
+        launcher = DirectWifiConnectLauncher.class, callListener = DirectWifiConnectServiceListener.class)
 public class DirectWifiConnectService extends DefaultWarpService {
     private IWarpDevice mWifiDirectDevice;
     private BroadcastReceiver mReceiver;
     private Channel mChannel;
     private boolean bConnected;
+    private boolean bCanCommunicateWith;
+    private Looper mLooper;
+    private Handler mHandler;
+    private boolean bStartsChainedService;
+    private String mPermissionKey;
+    private static final int PING_TIMEOUT = 5000;
+    public static final int PING_RECEIVED = 27;
     public static final String CONNECTING = "Connecting...";
     public static final String CONNECTED = "Connected";
     public static final String FAILED = "Connection failed";
+    //TODO: NEEDS DirectWifiPingService DEPENDENCY
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,3);
+        checkOptionalParameters(params,5);
         mWifiDirectDevice = (IWarpDevice)params[0];
         mChannel = (Channel)params[1];
         int groupOwnerPriority = (Integer)params[2];
+        bStartsChainedService = (Boolean)params[3];
+        mPermissionKey = (String)params[4];
         Context androidContext = (Context)context;
         setContext(context);
 
@@ -57,6 +75,12 @@ public class DirectWifiConnectService extends DefaultWarpService {
         setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_INDETERMINATE);
         getWarpServiceHandler().onServiceProgressUpdate(this);
 
+        if(bStartsChainedService)
+        {
+            preparePeerPingLooper();
+            WarpResourceLibrary.getInstance().setResource(mPermissionKey,
+                    DirectWifiPingLauncher.RES_P2P_CONNECT_SERVICE_HANDLER, mHandler);
+        }
         manager.connect(mChannel,p2pConfig,new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess()
@@ -140,7 +164,6 @@ public class DirectWifiConnectService extends DefaultWarpService {
             WifiP2pDevice ownerDevice = group.getOwner();
             bConnected = device.deviceName.equals(ownerDevice.deviceName)
                     && device.deviceAddress.equals(ownerDevice.deviceAddress);
-            //TODO: what about the warp location?
         }
         else
         {
@@ -154,7 +177,14 @@ public class DirectWifiConnectService extends DefaultWarpService {
                     break;
                 }
             }
+            if(bStartsChainedService)
+            {
+                mHandler.postDelayed(new OnPingTimeoutTask(),PING_TIMEOUT);
+                Looper.loop();
+                return;
+            }
         }
+        bCanCommunicateWith=bConnected;
         if(bConnected)
         {
             setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_MAX);
@@ -163,13 +193,63 @@ public class DirectWifiConnectService extends DefaultWarpService {
         {
             setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_FAILED);
         }
+        WarpResourceLibrary.getInstance().setResource(DirectWifiPingLauncher.
+                RES_P2P_CONNECT_SERVICE_HANDLER,mPermissionKey,null);
         getWarpServiceHandler().onServiceCompleted(this);
+    }
+
+    private void preparePeerPingLooper()
+    {
+        Looper.prepare();
+        mLooper = Looper.myLooper();
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message inputMessage)
+            {
+                if(inputMessage.what == PING_RECEIVED)
+                {
+                    onPingReceived();
+                }
+            }
+        };
+    }
+
+    public void onPingReceived()
+    {
+        bCanCommunicateWith = mWifiDirectDevice.getDeviceLocation().getIPv4Address() != null;
+        if(bCanCommunicateWith)
+        {
+            setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_MAX);
+            mLooper.quit();
+            WarpResourceLibrary.getInstance().setResource(DirectWifiPingLauncher.
+                    RES_P2P_CONNECT_SERVICE_HANDLER,mPermissionKey,null);
+        }
+    }
+
+    private class OnPingTimeoutTask implements Runnable {
+
+        @Override
+        public void run()
+        {
+            bCanCommunicateWith = mWifiDirectDevice.getDeviceLocation().getIPv4Address() != null;
+            if(bCanCommunicateWith)
+            {
+                setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_MAX);
+            }
+            else
+            {
+                setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_FAILED);
+            }
+            mLooper.quit();
+            WarpResourceLibrary.getInstance().setResource(DirectWifiPingLauncher.
+                    RES_P2P_CONNECT_SERVICE_HANDLER,mPermissionKey,null);
+        }
     }
 
     @Override
     public Object[] getResult()
     {
-        return new Object [] {(bConnected) ? CONNECTED : FAILED};
+        return new Object [] {(bConnected) ? CONNECTED : FAILED, bCanCommunicateWith};
     }
 
     @Override

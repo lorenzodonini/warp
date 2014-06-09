@@ -59,11 +59,11 @@ public interface IWarpService {
     public void stopService();
 
     /**
-     * Sets an IWarpServiceListener Object inside the IWarpService. This listener object
+     * Sets an IWarpServiceListener Object inside the IWarpService. This callListener object
      * will automatically receive a callback from the service once the procedure is
      * completed. This serves the purpose of giving the caller object the possibility of
      * retrieving an asynchronous result from the IWarpService object itself.
-     * In case the service doesn't need to return a result, the listener
+     * In case the service doesn't need to return a result, the callListener
      * can simply be left empty, and no callback will be triggered.
      *
      * @param handler The Object implementing the IWarpServiceListener interface
@@ -96,5 +96,10 @@ public interface IWarpService {
         RUNNING,
         ABORTED,
         COMPLETED
+    }
+
+    public enum ServiceOperation {
+        CALL,
+        PROVIDE
     }
 }

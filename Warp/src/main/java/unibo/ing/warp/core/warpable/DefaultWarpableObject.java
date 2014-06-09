@@ -55,6 +55,29 @@ public abstract class DefaultWarpableObject implements IWarpable {
     }
 
     @Override
+    public byte[] warpTo() throws JSONException
+    {
+        if(mJsonObject==null)
+        {
+            mJsonObject=toJSONObject();
+        }
+        if(mJsonObject != null)
+        {
+            String toSend=mJsonObject.toString();
+            return toSend.getBytes();
+        }
+        return null;
+    }
+
+    @Override
+     public int warpFrom(byte [] buffer) throws JSONException {
+        String received = new String(buffer);
+        mJsonObject = new JSONObject(received);
+
+        return received.length()*FORMAT_CHAR_SIZE;
+    }
+
+    @Override
     public Object getValue() throws JSONException
     {
         if(mJsonObject!=null)

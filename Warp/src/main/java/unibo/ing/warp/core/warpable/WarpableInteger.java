@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 /**
  * User: lorenzodonini

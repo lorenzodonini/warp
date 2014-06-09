@@ -14,7 +14,7 @@ import java.util.EnumSet;
 public interface IBeam {
     public int beamWarpable(IWarpable object) throws IOException, JSONException;
     public int receiveWarpable(IWarpable result) throws IOException, JSONException;
-    public IWarpEngine getLocalWarpEngine();
+    public WarpLocation getPeerWarpLocation();
     public WarpFlag getFlag(String propertyName);
     public WarpFlag [] getFlags();
     public void addFlag(WarpFlag flag);

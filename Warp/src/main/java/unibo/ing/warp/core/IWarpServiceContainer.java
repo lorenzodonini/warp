@@ -32,6 +32,7 @@ public interface IWarpServiceContainer {
                     WarpServiceInfo serviceInfo, IWarpEngine callerEngine, IWarpDevice target,
                     IWarpServiceListener listener, Object[] params, IWarpable[] remoteParams);
     public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass,
-                    WarpServiceInfo serviceInfo, IBeam warpBeam, IWarpServiceListener listener, Object[] params);
+                    WarpServiceInfo serviceInfo, IBeam warpBeam, IWarpServiceListener listener,
+                    IWarpEngine callerEngine,Object[] params);
     public void stopService(long serviceId);
 }

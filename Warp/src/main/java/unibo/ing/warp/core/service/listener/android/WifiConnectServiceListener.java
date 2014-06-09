@@ -6,19 +6,20 @@ import unibo.ing.warp.core.IWarpInteractiveDevice;
 import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
-import unibo.ing.warp.core.service.android.p2p.DirectWifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
-import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
+import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
+import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 
 /**
- * Created by lorenzodonini on 26/05/14.
+ * Created by Lorenzo Donini on 5/17/2014.
  */
-public class AndroidDirectWifiConnectServiceListener extends DefaultWarpServiceListener {
+public final class WifiConnectServiceListener extends DefaultWarpServiceListener {
     private DefaultWarpInteractiveDevice warpDevice;
     private WarpAccessManager accessManager;
+    private String mUserPermissionKey;
     private WarpServiceInfo chainServiceToCall;
 
     @Override
@@ -28,9 +29,10 @@ public class AndroidDirectWifiConnectServiceListener extends DefaultWarpServiceL
         {
             accessManager = (WarpAccessManager) values[0];
             warpDevice = (DefaultWarpInteractiveDevice) values[1];
-            if(values.length == 3)
+            if(values.length == 4)
             {
                 chainServiceToCall = (WarpServiceInfo)values[2];
+                mUserPermissionKey = (String)values[3];
             }
         }
     }
@@ -40,16 +42,15 @@ public class AndroidDirectWifiConnectServiceListener extends DefaultWarpServiceL
     {
         Object [] result = servant.getResult();
         String message = (String) result[0];
+        boolean canCommunicateWith = (Boolean) result[1];
         warpDevice.setOperationProgress(servant.getCurrentPercentProgress());
         warpDevice.setOperationLabel(message);
         if(message.equals(WifiConnectService.CONNECTED))
         {
-            warpDevice.setDeviceStatus(IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED);
-            if(chainServiceToCall != null)
+            if(chainServiceToCall != null && canCommunicateWith)
             {
                 startChainService();
             }
-            //TODO: implement the rest! Need to start a beacon service to identify network nodes
         }
         else if(message.equals(WifiConnectService.FAILED))
         {
@@ -60,28 +61,32 @@ public class AndroidDirectWifiConnectServiceListener extends DefaultWarpServiceL
     private void startChainService()
     {
         IWarpEngine warpDrive = accessManager.getLocalDevice().getWarpEngine();
-        IWarpServiceResourcesHandler serviceHandler = warpDrive.getDefaultHandlerForService(chainServiceToCall.name());
-        Object [] listenerParams = serviceHandler.getServiceListenerParameters(warpDevice);
-        Object [] params = serviceHandler.getServiceParameters(warpDevice);
+        IWarpServiceLauncher serviceLauncher = warpDrive.getLauncherForService(chainServiceToCall.name());
+        serviceLauncher.initializeService(WarpResourceLibrary.getInstance(),
+                mUserPermissionKey, IWarpService.ServiceOperation.CALL);
+        Object [] listenerParams = serviceLauncher.getServiceListenerParameters(warpDevice,
+                IWarpService.ServiceOperation.CALL);
+        Object [] params = serviceLauncher.getServiceParameters(warpDevice,
+                IWarpService.ServiceOperation.CALL);
         if(chainServiceToCall.type() == WarpServiceInfo.Type.LOCAL)
         {
-            warpDrive.callLocalService(chainServiceToCall.name(),warpDrive.
-                    getDefaultListenerForService(chainServiceToCall.name(), listenerParams),params);
+            warpDrive.callLocalService(chainServiceToCall.name(),warpDrive.getListenerForService(
+                    chainServiceToCall.name(), listenerParams, IWarpService.ServiceOperation.CALL),params);
         }
         else
         {
-            IWarpable[] remoteParams = serviceHandler.getServiceRemoteParameters();
+            IWarpable[] remoteParams = serviceLauncher.getServiceRemoteParameters();
             if(chainServiceToCall.type() == WarpServiceInfo.Type.PUSH)
             {
                 warpDrive.callPushService(chainServiceToCall.name(),warpDevice.getWarpDevice(),
-                        warpDrive.getDefaultListenerForService(chainServiceToCall.name(),listenerParams),
-                        null,params,remoteParams);
+                        warpDrive.getListenerForService(chainServiceToCall.name(), listenerParams,
+                        IWarpService.ServiceOperation.CALL),null,params,remoteParams);
             }
             else
             {
                 warpDrive.callPullService(chainServiceToCall.name(),warpDevice.getWarpDevice(),
-                        warpDrive.getDefaultListenerForService(chainServiceToCall.name(),listenerParams),
-                        null,params,remoteParams);
+                        warpDrive.getListenerForService(chainServiceToCall.name(), listenerParams,
+                        IWarpService.ServiceOperation.CALL),null,params,remoteParams);
             }
         }
     }
@@ -91,7 +96,7 @@ public class AndroidDirectWifiConnectServiceListener extends DefaultWarpServiceL
     {
         Object [] result = servant.getCurrentProgress();
         String message = (String) result[0];
-        if(message.equals(DirectWifiConnectService.CONNECTING))
+        if(message.equals(WifiConnectService.CONNECTING))
         {
             warpDevice.setDeviceStatus(IWarpInteractiveDevice.WarpDeviceStatus.CONNECTING);
             warpDevice.setOperationProgress(servant.getCurrentPercentProgress());

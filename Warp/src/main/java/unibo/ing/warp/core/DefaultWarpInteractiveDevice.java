@@ -82,21 +82,40 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
     }
 
     @Override
-    public void connect(IWarpServiceListener listener)
+    public void connect()
     {
         if(mRequestManager != null)
         {
-            mRequestManager.onConnectRequest(this,listener);
+            mRequestManager.onConnectRequest(this);
         }
     }
 
     @Override
-    public void disconnect(IWarpServiceListener listener)
+    public void disconnect()
     {
         if(mRequestManager != null)
         {
-            mRequestManager.onDisconnectRequest(this,listener);
+            mRequestManager.onDisconnectRequest(this);
         }
+    }
+
+    @Override
+    public void callPushService(WarpServiceInfo serviceDescriptor)
+    {
+        if(mRequestManager != null)
+        {
+            mRequestManager.onPushServiceRequest(this,serviceDescriptor);
+        }
+    }
+
+    @Override
+    public void callPullService(WarpServiceInfo serviceDescriptor)
+    {
+        if(mRequestManager != null)
+        {
+            mRequestManager.onPullServiceRequest(this,serviceDescriptor);
+        }
+
     }
 
     @Override

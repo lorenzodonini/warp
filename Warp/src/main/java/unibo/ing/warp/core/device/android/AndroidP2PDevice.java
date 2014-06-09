@@ -20,7 +20,7 @@ public class AndroidP2PDevice extends DefaultWarpDevice {
     {
         super();
         mP2pDevice=device;
-        mWarpLocation = location;
+        mWarpLocation = (location != null) ? location : new WarpLocation();
     }
 
     @Override

@@ -4,6 +4,8 @@ import android.os.Handler;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpServiceObserver;
 import unibo.ing.warp.core.IWarpEngine;
+import unibo.ing.warp.core.service.launcher.WarpHandshakeLauncher;
+import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.utils.WarpUtils;
 import unibo.ing.warp.core.device.IWarpDevice;
@@ -12,7 +14,6 @@ import unibo.ing.warp.core.IWarpServiceContainer;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.WarpHandshakeService;
-
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,16 +23,17 @@ import java.util.concurrent.Executors;
  */
 public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarpServiceObserver {
     private Map<String, Class<? extends IWarpService>> mRegisteredServices;
-    private static final int LIGHTWEIGHT_THREAD_NUM = 4;
+    private static final int LIGHTWEIGHT_THREAD_NUM = 6;
     private ExecutorService mExecutor;
     private Handler mHandler;
     private long mBaseId;
+    private String mMasterKey;
     private Map<String, Collection<Long>> mServicesIds;
     private Map<Long, Runnable> mActiveTasks;
     private Map<Long, IWarpService> mRunningServices;
     private Map<IBeam, IWarpService> mActiveBeams;
 
-    public AndroidWarpServiceContainer()
+    public AndroidWarpServiceContainer(String masterKey)
     {
         mRegisteredServices = new HashMap<String, Class<? extends IWarpService>>();
         mServicesIds = new HashMap<String, Collection<Long>>();
@@ -39,6 +41,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         mRunningServices = new HashMap<Long, IWarpService>();
         mActiveBeams = new HashMap<IBeam, IWarpService>();
         mHandler = new Handler();
+        mMasterKey = masterKey;
         mBaseId = 123; //TODO: change this somehow
     }
 
@@ -278,14 +281,14 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
 
     @Override
     public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
-                        IBeam warpBeam, IWarpServiceListener listener, Object [] params)
+                        IBeam warpBeam, IWarpServiceListener listener, IWarpEngine callerEngine, Object [] params)
     {
         try {
             IWarpService service = initializeWarpServiceToStart(serviceInfo);
             if(service != null)
             {
                 ServerRemoteWarpServiceRunnable thread = new ServerRemoteWarpServiceRunnable(warpBeam,
-                        service,serviceInfo,listener,params);
+                        service,serviceInfo,listener,callerEngine,params);
                 mExecutor.execute(thread);
             }
             else
@@ -446,16 +449,20 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
                 }
 
                 try {
-                    //Parameters to send to the handshake service
-                    Object [] handshakeServiceParams = new Object[4];
-                    handshakeServiceParams[0]=localEngine;
-                    handshakeServiceParams[1]=remoteDevice.getDeviceLocation();
-                    handshakeServiceParams[2]=toRun;
-                    handshakeServiceParams[3]=mRemoteParams;
+                    WarpHandshakeLauncher launcher = (WarpHandshakeLauncher)
+                            localEngine.getLauncherForService(info.name());
+                    //Setting parameters to send to the handshake service
+                    launcher.setRemoteDeviceLocation(remoteDevice.getDeviceLocation());
+                    launcher.setRemoteParameters(mRemoteParams);
+                    launcher.setServiceToLaunchDescriptor(mInfo);
+                    launcher.initializeService(WarpResourceLibrary.getInstance(),mMasterKey,
+                            IWarpService.ServiceOperation.CALL);
+;
                     handshakeService.setWarpServiceHandler(taskHandler);
                     //Service is from now Handshaking
                     taskHandler.setHandledServiceStatus(IWarpService.ServiceStatus.HANDSHAKING);
-                    handshakeService.callService(null,null,handshakeServiceParams);
+                    handshakeService.callService(null,null,launcher.getServiceParameters(
+                            null, IWarpService.ServiceOperation.CALL));
                     Object [] result = handshakeService.getResult();
                     if(result == null || !(result[0] instanceof IBeam))
                     {
@@ -490,15 +497,17 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         private Object [] mParams;
         private WarpServiceInfo mInfo;
         private AndroidHandler taskHandler;
+        private IWarpEngine mLocalEngine;
 
         public ServerRemoteWarpServiceRunnable(IBeam warpBeam, IWarpService service, WarpServiceInfo info,
-                                        IWarpServiceListener listener, Object [] params)
+                                        IWarpServiceListener listener, IWarpEngine local, Object [] params)
         {
             taskHandler=new AndroidConcurrentHandler(listener,AndroidWarpServiceContainer.this,
                     generateServiceId(),mHandler);
             mWarpBeam=warpBeam;
             toRun=service;
             mInfo=info;
+            mLocalEngine=local;
             mParams=params;
             taskHandler.onBeamCreate(mWarpBeam,toRun);
         }
@@ -511,7 +520,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
                 //Service is from now on Running
                 taskHandler.setHandledServiceStatus(IWarpService.ServiceStatus.RUNNING);
                 onServiceCreate(toRun,mInfo,taskHandler.getHandledServiceId(),this);
-                toRun.provideService(mWarpBeam, mWarpBeam.getLocalWarpEngine().getContext(), mParams);
+                toRun.provideService(mWarpBeam, mLocalEngine.getContext(), mParams);
                 //In this case nobody asks for service completion, so the service just gets completed
                 taskHandler.completeService(mWarpBeam,toRun);
             }

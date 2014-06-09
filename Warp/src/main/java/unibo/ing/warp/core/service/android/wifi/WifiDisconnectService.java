@@ -10,13 +10,16 @@ import android.net.wifi.WifiManager;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.android.WifiDisconnectLauncher;
+import unibo.ing.warp.core.service.listener.android.WifiDisconnectServiceListener;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 
 /**
  * Created by Lorenzo Donini on 5/22/2014.
  */
 @WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="disconnectFromAccessPoint", label = "Disconnect",
-        target = WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT)
+        target = WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT,
+        launcher = WifiDisconnectLauncher.class, callListener = WifiDisconnectServiceListener.class)
 public class WifiDisconnectService extends DefaultWarpService {
     private BroadcastReceiver mReceiver;
     private boolean bDisconnected;
@@ -56,7 +59,6 @@ public class WifiDisconnectService extends DefaultWarpService {
         setPercentProgress(IWarpDeviceViewAdapter.PROGRESS_INDETERMINATE);
         getWarpServiceHandler().onServiceProgressUpdate(this);
         bDisconnected = wifiManager.disconnect();
-        //TODO: disableNetwork in case the wifi manager tries to reconnect to the same network
     }
 
     @Override

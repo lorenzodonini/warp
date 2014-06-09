@@ -1,7 +1,5 @@
 package unibo.ing.warp.core;
 
-import unibo.ing.warp.utils.android.AndroidUtils;
-
 import java.math.BigInteger;
 import java.net.InetAddress;
 
@@ -24,6 +22,7 @@ public class WarpLocation {
     private InetAddress mIPv4Address;
     private String mStringIPv4;
     private byte [] mByteIPv4;
+    private int mPort;
     public static final String LOCAL_ADDRESS="localhost";
 
     public WarpLocation()
@@ -51,6 +50,16 @@ public class WarpLocation {
         setIPv4Address(addr);
     }
 
+    public synchronized void setPort(int port)
+    {
+        mPort = (port >= 1024 && port < 65536) ? port : -1;
+    }
+
+    public synchronized int getPort()
+    {
+        return mPort;
+    }
+
     /**
      * Sets IPv4 address given the InetAddress object containing the address.
      *
@@ -66,7 +75,7 @@ public class WarpLocation {
      *
      * @param addr  The int representation of the IP address
      */
-    public void setIPv4Address(int addr)
+    public synchronized void setIPv4Address(int addr)
     {
         byte bytes [] = BigInteger.valueOf(addr).toByteArray();
         byte inetAddrBytes [];
@@ -90,7 +99,7 @@ public class WarpLocation {
      *
      * @param addr  The byte array representation of the IP address
      */
-    public void setIPv4Address(byte addr [])
+    public synchronized void setIPv4Address(byte addr [])
     {
         mByteIPv4=addr;
     }
@@ -100,7 +109,7 @@ public class WarpLocation {
      *
      * @param addr  The String representation of the IP address (e.g. "192.168.0.1")
      */
-    public void setIPv4Address(String addr)
+    public synchronized void setIPv4Address(String addr)
     {
         mStringIPv4=addr;
     }

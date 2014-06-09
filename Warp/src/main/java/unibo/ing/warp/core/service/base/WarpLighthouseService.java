@@ -2,22 +2,21 @@ package unibo.ing.warp.core.service.base;
 
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpEngine;
-import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.WarpLighthouseLauncher;
 
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
  * Created by Lorenzo Donini on 5/17/2014.
  */
 @WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL, label="Lighthouse", execution =
-        WarpServiceInfo.ServiceExecution.CONCURRENT,name="lightHouse")
+        WarpServiceInfo.ServiceExecution.CONCURRENT,name="lightHouse",
+        launcher = WarpLighthouseLauncher.class)
 public class WarpLighthouseService extends DefaultWarpService {
     public static final int LISTEN_PORT=13837;
     public static final int DEFAULT_SOCKET_TIMEOUT=1800000;

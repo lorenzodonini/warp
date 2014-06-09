@@ -10,15 +10,15 @@ import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.base.*;
-import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
-import unibo.ing.warp.core.service.handler.WarpServiceResourcesHandlerManager;
+import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
+import unibo.ing.warp.core.service.listener.DefaultEmptyWarpServiceListener;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
-import unibo.ing.warp.core.service.listener.android.AndroidWarpServiceListenerFactory;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
-import unibo.ing.warp.core.service.listener.IWarpServiceListenerFactory;
 import unibo.ing.warp.core.warpable.IWarpable;
 import unibo.ing.warp.utils.WarpUtils;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by cronic90 on 06/10/13.
@@ -34,7 +34,7 @@ import java.util.Collection;
  *
  * This default implementation makes use of Threads when calling a Push or Pull service,
  * since these operations are remote and should be done in background. This is automatically
- * done by the WarpHandshakeService and WarpDispatcherService, which create a new Thread
+ * done by the WarpHandshakeService and WarpTCPDispatcherService, which create a new Thread
  * for each incoming or outgoing request.
  *
  * NOTE: the basic Map<Name, Service> already contains an instance of each registered service.
@@ -48,8 +48,7 @@ import java.util.Collection;
 public class AndroidWarpDrive implements IWarpEngine {
     private Context mContext;
     private IWarpServiceContainer mContainer;
-    private IWarpServiceListenerFactory mListenerFactory;
-    private WarpServiceResourcesHandlerManager mHandlerManager;
+    private Map<String, WarpServiceInfo> mDescriptors;
 
     /**
      * This constructor should be called for remote WarpDrives, since it doesn't set a Context,
@@ -57,18 +56,17 @@ public class AndroidWarpDrive implements IWarpEngine {
      * A remote node's AndroidWarpDrive should in fact have no services running at all. It should
      * be a shell containing only the remote DriveLocation, once it's set.
      */
-    public AndroidWarpDrive(Context context)
+    public AndroidWarpDrive(Context context, String masterKey)
     {
         if(context!=null)
         {
             mContext=context;
         }
-        mContainer= new AndroidWarpServiceContainer();
-        mListenerFactory = new AndroidWarpServiceListenerFactory();
-        mHandlerManager = new WarpServiceResourcesHandlerManager();
+        mContainer= new AndroidWarpServiceContainer(masterKey);
+        mDescriptors = new HashMap<String, WarpServiceInfo>();
 
         //ADDING CORE SERVICES
-        addWarpService(WarpDispatcherService.class);
+        addWarpService(WarpTCPDispatcherService.class);
         addWarpService(WarpHandshakeService.class);
         addWarpService(LookupService.class);
         addWarpService(PushObjectService.class);
@@ -96,28 +94,9 @@ public class AndroidWarpDrive implements IWarpEngine {
         if(mContainer!=null)
         {
             WarpServiceInfo info = mContainer.registerWarpService(serviceClass);
-            Class<? extends DefaultWarpServiceListener> listenerClass =
-                    AndroidServicesMapping.getListenerClass(serviceClass);
-            if(listenerClass != null)
+            if(info != null)
             {
-                mListenerFactory.addWarpServiceListenerMapping(info.name(),listenerClass);
-            }
-            Class<? extends IWarpServiceResourcesHandler> handlerClass =
-                    AndroidServicesMapping.getHandlerClass(serviceClass);
-            if(handlerClass != null)
-            {
-                try{
-                    IWarpServiceResourcesHandler handler = handlerClass.newInstance();
-                    mHandlerManager.addServiceHandler(info.name(),handler);
-                }
-                catch (InstantiationException e)
-                {
-                    //TODO: error handling
-                }
-                catch (IllegalAccessException e)
-                {
-                    //TODO: error handling
-                }
+                mDescriptors.put(info.name(),info);
             }
         }
     }
@@ -126,19 +105,22 @@ public class AndroidWarpDrive implements IWarpEngine {
     public void callLocalService(String serviceName, IWarpServiceListener listener,
                                  Object [] params)
     {
-        Class<? extends IWarpService> serviceClass;
-        WarpServiceInfo info;
+        Class<? extends IWarpService> serviceClass = mContainer.getRegisteredWarpServiceByName(serviceName);
+        if(serviceClass == null)
+        {
+            return;
+        }
+        WarpServiceInfo info = mDescriptors.get(serviceName);
 
-        serviceClass=mContainer.getRegisteredWarpServiceByName(serviceName);
-        if(serviceClass!=null)
+        if(info == null)
         {
             info = WarpUtils.getWarpServiceInfo(serviceClass);
-            if(info.name().equals(serviceName) &&
-                    info.type()== WarpServiceInfo.Type.LOCAL)
-            {
-                //Current found service is a Local Service
-                mContainer.startLocalWarpService(serviceClass,info,this,listener,params);
-            }
+        }
+        if(info != null && info.name().equals(serviceName) && info.protocol() == WarpServiceInfo.Protocol.NONE
+                && info.type()== WarpServiceInfo.Type.LOCAL)
+        {
+            //Current found service is a Local Service
+            mContainer.startLocalWarpService(serviceClass,info,this,listener,params);
         }
     }
 
@@ -176,12 +158,17 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             return;
         }
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(serviceClass);
-        if(info != null && info.name().equals(serviceName) && info.type()== WarpServiceInfo.Type.PUSH)
+        WarpServiceInfo info = mDescriptors.get(serviceName);
+        if(info == null)
+        {
+            info = WarpUtils.getWarpServiceInfo(serviceClass);
+        }
+        if(info != null && info.name().equals(serviceName) && info.type()== WarpServiceInfo.Type.PUSH
+                && info.protocol() != WarpServiceInfo.Protocol.NONE)
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,params);
+                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,this,params);
             }
             else
             {
@@ -199,12 +186,17 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             return;
         }
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(serviceClass);
-        if(info != null && info.name().equals(serviceName) && info.type()== WarpServiceInfo.Type.PULL)
+        WarpServiceInfo info = mDescriptors.get(serviceName);
+        if(info == null)
+        {
+            info = WarpUtils.getWarpServiceInfo(serviceClass);
+        }
+        if(info != null && info.name().equals(serviceName) && info.type()== WarpServiceInfo.Type.PULL
+                && info.protocol() != WarpServiceInfo.Protocol.NONE)
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,params);
+                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,this,params);
             }
             else
             {
@@ -226,7 +218,9 @@ public class AndroidWarpDrive implements IWarpEngine {
         /*Request Dispatcher Service is called on startup, and works as a Daemon.
         If the container Activity is garbaged though, the background Thread will be killed,
         instead of acting as a System service. */
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WarpDispatcherService.class);
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WarpTCPDispatcherService.class);
+        callLocalService(info.name(),null,new Object [] {this});
+        info = WarpUtils.getWarpServiceInfo(WarpUDPDispatcherService.class);
         callLocalService(info.name(),null,new Object [] {this});
     }
 
@@ -237,18 +231,51 @@ public class AndroidWarpDrive implements IWarpEngine {
     }
 
     @Override
-    public IWarpServiceListener getDefaultListenerForService(String serviceName, Object [] values)
+    public IWarpServiceListener getListenerForService(String serviceName, Object [] values,
+                                                      IWarpService.ServiceOperation operation)
     {
-        return mListenerFactory.createWarpServiceListener(serviceName,values);
+        DefaultWarpServiceListener listener = null;
+        WarpServiceInfo info = mDescriptors.get(serviceName);
+        if(info == null)
+        {
+            info = WarpUtils.getWarpServiceInfo(mContainer.getRegisteredWarpServiceByName(serviceName));
+        }
+        if(info != null)
+        {
+            if(info.callListener() != DefaultEmptyWarpServiceListener.class)
+            {
+                try {
+                    listener = (DefaultWarpServiceListener) info.callListener().newInstance();
+                    listener.putDefaultValues(values);
+                }
+                catch (Exception e)
+                {
+                    //TODO: handle error!
+                }
+            }
+        }
+        return listener;
     }
 
-    public IWarpServiceResourcesHandler getDefaultHandlerForService(String serviceName)
+    @Override
+    public IWarpServiceLauncher getLauncherForService(String serviceName)
     {
-        return mHandlerManager.getServiceHandlerByName(serviceName);
-    }
-
-    public WarpServiceResourcesHandlerManager getServiceHandlerManager()
-    {
-        return mHandlerManager;
+        WarpServiceInfo info = mDescriptors.get(serviceName);
+        IWarpServiceLauncher launcher = null;
+        if(info == null)
+        {
+            info = WarpUtils.getWarpServiceInfo(mContainer.getRegisteredWarpServiceByName(serviceName));
+        }
+        if(info != null)
+        {
+            try {
+                launcher = info.launcher().newInstance();
+            }
+            catch (Exception e)
+            {
+                //TODO: handle error!
+            }
+        }
+        return launcher;
     }
 }

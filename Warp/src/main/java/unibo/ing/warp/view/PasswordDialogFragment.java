@@ -59,7 +59,7 @@ public class PasswordDialogFragment extends DialogFragment {
     /**
      * Setter method. Called in case the Dialog wasn't directly attached to an activity.
      * The user can decide to attach another class that is implementing the
-     * DialogFragmentListener interface. Once attached, a listener will automatically
+     * DialogFragmentListener interface. Once attached, a callListener will automatically
      * receive the proper callback method invocation once the Dialog triggers an event.
      *
      * @param listener  The class implementing the DialogFragmentListener interface
@@ -139,7 +139,7 @@ public class PasswordDialogFragment extends DialogFragment {
             public void onClick(View view) {
                 if(mListener!=null)
                 {
-                    //We just call the callback method in case the listener is attached
+                    //We just call the callback method in case the callListener is attached
                     mListener.onDialogPositiveClick(PasswordDialogFragment.this);
                 }
             }
@@ -150,7 +150,7 @@ public class PasswordDialogFragment extends DialogFragment {
             public void onClick(View view) {
                 if(mListener!=null)
                 {
-                    //We just call the callback method in case the listener is attached
+                    //We just call the callback method in case the callListener is attached
                     mListener.onDialogNegativeClick(PasswordDialogFragment.this);
                 }
             }

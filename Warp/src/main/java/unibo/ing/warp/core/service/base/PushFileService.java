@@ -2,21 +2,19 @@ package unibo.ing.warp.core.service.base;
 
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.WarpFlag;
-import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
-import unibo.ing.warp.core.warpable.IWarpable;
-import unibo.ing.warp.core.warpable.WarpableBoolean;
+import unibo.ing.warp.core.service.launcher.PushFileLauncher;
+import unibo.ing.warp.core.service.listener.PushFileServiceListener;
 import unibo.ing.warp.core.warpable.WarpableFile;
 import unibo.ing.warp.core.warpable.WarpableString;
-
 import java.io.File;
 
 /**
  * Created by Lorenzo Donini on 5/7/2014.
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.PUSH, target = WarpServiceInfo.Target.ALL,
-        name = "pushFile", label = "Send File")
+@WarpServiceInfo(type = WarpServiceInfo.Type.PUSH, target = WarpServiceInfo.Target.ALL, name = "pushFile",
+        label = "Send File", launcher = PushFileLauncher.class, callListener = PushFileServiceListener.class)
 public class PushFileService extends DefaultWarpService {
     private File mResultFile; //Available to receiver only (provideService)
     private long mTransferredBytes = 0;

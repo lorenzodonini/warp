@@ -9,7 +9,7 @@ import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 /**
  * Created by Lorenzo Donini on 5/22/2014.
  */
-public class AndroidWifiDisconnectServiceListener extends DefaultWarpServiceListener {
+public final class WifiDisconnectServiceListener extends DefaultWarpServiceListener {
     private DefaultWarpInteractiveDevice warpDevice;
 
     @Override

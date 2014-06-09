@@ -11,6 +11,7 @@ import java.io.*;
 public class WarpableFile implements IWarpable {
     private File mFile;
     private static final int DEFAULT_BUFFER_SIZE = 10000;
+    private static final int MAX_UDP_PAYLOAD = 65536;
     private int mBufferSize;
     private PushFileService.FileWarpProgressUpdater mUpdater;
 
@@ -67,6 +68,46 @@ public class WarpableFile implements IWarpable {
             }
             fileOutputStream.close();
             return result;
+        }
+        return -1;
+    }
+
+    @Override
+    public byte[] warpTo() throws JSONException
+    {
+        if(mFile != null && mFile.length() <= MAX_UDP_PAYLOAD)
+        {
+            int length = ((Long)mFile.length()).intValue();
+            byte [] payload = new byte[length];
+            try {
+                FileInputStream stream = new FileInputStream(mFile);
+                int result=stream.read(payload);
+                mUpdater.notifyProgress(100,result);
+                stream.close();
+            }
+            catch (IOException e)
+            {
+                //TODO: HANDLE ERROR
+            }
+            return payload;
+        }
+        return null;
+    }
+
+    @Override
+    public int warpFrom(byte[] buffer) throws JSONException
+    {
+        if(mFile != null)
+        {
+            try {
+                FileOutputStream stream = new FileOutputStream(mFile);
+                stream.write(buffer);
+            }
+            catch(IOException e)
+            {
+                //TODO: HANDLE ERROR
+            }
+            return buffer.length;
         }
         return -1;
     }

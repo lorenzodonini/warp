@@ -1,7 +1,8 @@
 package unibo.ing.warp.core.service;
 
-import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
-
+import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
+import unibo.ing.warp.core.service.listener.DefaultEmptyWarpServiceListener;
+import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import java.lang.annotation.*;
 
 /**
@@ -18,14 +19,19 @@ import java.lang.annotation.*;
 @Inherited
 public @interface WarpServiceInfo {
     public enum Type { LOCAL, PUSH, PULL}
-    public enum ServiceExecution { DEFAULT, SEQUENTIAL, CONCURRENT}
+    public enum ServiceExecution { DEFAULT, SEQUENTIAL, CONCURRENT }
     public enum Target { ANDROID, JAVA, ALL}
-    public enum ServiceCompletion { EXPLICIT, IMPLICIT}
-    Type type() default Type.LOCAL;
+    public enum ServiceCompletion { EXPLICIT, IMPLICIT }
+    public enum Protocol { NONE, UDP, TCP }
+    Type type();
     ServiceExecution execution() default ServiceExecution.DEFAULT;
     Target target() default Target.ALL;
     ServiceCompletion completion() default ServiceCompletion.IMPLICIT;
     String name();
     String label();
     String [] dependencies() default "";
+    Class<? extends IWarpServiceListener> callListener() default DefaultEmptyWarpServiceListener.class;
+    Class<? extends IWarpServiceListener> provideListener() default DefaultEmptyWarpServiceListener.class;
+    Class<? extends IWarpServiceLauncher> launcher();
+    Protocol protocol() default Protocol.TCP;
 }

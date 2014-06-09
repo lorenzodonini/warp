@@ -40,6 +40,24 @@ public enum WarpFlag {
         {
             return mBufferSize;
         }
+    }, MESSAGE_SIZE {
+        private int mMessageSize = DEFAULT;
+        private static final int DEFAULT=512;
+
+        @Override
+        public void setValue(Object value)
+        {
+            if(value instanceof Integer)
+            {
+                mMessageSize = (Integer)value;
+            }
+        }
+
+        @Override
+        public Object getValue()
+        {
+            return mMessageSize;
+        }
     }, TIMEOUT {
         private int mTimeout=DEFAULT;
         private static final int DEFAULT=5;
@@ -57,24 +75,6 @@ public enum WarpFlag {
         public Object getValue()
         {
             return mTimeout;
-        }
-    }, LINGER {
-        private int mLingerTime=DEFAULT;
-        private static final int DEFAULT=5;
-
-        @Override
-        public void setValue(Object value)
-        {
-            if(value instanceof Integer)
-            {
-                mLingerTime=(Integer)value;
-            }
-        }
-
-        @Override
-        public Object getValue()
-        {
-            return mLingerTime;
         }
     };
 

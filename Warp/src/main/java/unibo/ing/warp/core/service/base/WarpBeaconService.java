@@ -3,6 +3,7 @@ package unibo.ing.warp.core.service.base;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.WarpBeaconLauncher;
 
 import java.io.InterruptedIOException;
 import java.net.*;
@@ -12,7 +13,8 @@ import java.util.*;
  * Created by Lorenzo Donini on 5/17/2014.
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label = "Beacon", execution =
-        WarpServiceInfo.ServiceExecution.CONCURRENT, name = "beacon")
+        WarpServiceInfo.ServiceExecution.CONCURRENT, name = "beacon",
+        launcher = WarpBeaconLauncher.class)
 public class WarpBeaconService extends DefaultWarpService {
     private boolean bEnabled;
     private Map<InetAddress, String []> mResult;

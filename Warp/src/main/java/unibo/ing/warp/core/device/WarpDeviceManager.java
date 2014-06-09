@@ -16,13 +16,13 @@ import java.util.concurrent.ConcurrentMap;
 public class WarpDeviceManager {
     private IViewLifecycleObserver mViewObserver;
     private ConcurrentMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>> mWarpDevices;
-    private ConcurrentMap<Class<? extends IWarpDevice>, Vector<String>> mBlackListDevices; //Names
+    private ConcurrentMap<Class<? extends IWarpDevice>, List<String>> mBlackListDevices; //Names
     private int mSize;
 
     public WarpDeviceManager()
     {
         mWarpDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, Vector<IWarpInteractiveDevice>>();
-        mBlackListDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, Vector<String>>();
+        mBlackListDevices = new ConcurrentHashMap<Class<? extends IWarpDevice>, List<String>>();
         mSize=0;
     }
 
@@ -45,7 +45,6 @@ public class WarpDeviceManager {
                                     Class<? extends IWarpDevice> deviceClass, boolean removeOlder)
     {
         IWarpInteractiveDevice newDevices [] = (IWarpInteractiveDevice[]) devices.toArray();
-        Vector<String> blackList = mBlackListDevices.get(deviceClass);
         addWarpDevices(newDevices,deviceClass,removeOlder);
     }
 
@@ -87,8 +86,20 @@ public class WarpDeviceManager {
                                     IWarpInteractiveDevice [] newDevices)
     {
         boolean found;
-        for(IWarpInteractiveDevice oldDevice : oldDevices)
+        IWarpInteractiveDevice devicesArray [] = oldDevices.toArray(new IWarpInteractiveDevice[oldDevices.size()]);
+        for(IWarpInteractiveDevice oldDevice : devicesArray)
         {
+            if(isOnBlackList(oldDevice))
+            {
+                oldDevices.remove(oldDevice);
+                mSize--;
+                if(mViewObserver != null)
+                {
+                    mViewObserver.onWarpDeviceRemoved(oldDevice);
+                    ((DefaultWarpInteractiveDevice)oldDevice).setViewObserver(null);
+                }
+                continue;
+            }
             found=false;
             for(IWarpInteractiveDevice newDevice : newDevices)
             {
@@ -117,6 +128,10 @@ public class WarpDeviceManager {
         boolean found;
         for(IWarpInteractiveDevice newDevice : newDevices)
         {
+            if(isOnBlackList(newDevice))
+            {
+                continue;
+            }
             found=false;
             for(IWarpInteractiveDevice oldDevice : oldDevices)
             {
@@ -124,6 +139,7 @@ public class WarpDeviceManager {
                 {
                     found=true;
                     oldDevice.updateDeviceData(newDevice);
+                    ((DefaultWarpInteractiveDevice)oldDevice).setDeviceStatus(newDevice.getDeviceStatus());
                     break;
                 }
             }
@@ -142,10 +158,10 @@ public class WarpDeviceManager {
 
     public synchronized void addBlackListDevice(Class<? extends IWarpDevice> deviceClass, String deviceName)
     {
-        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        List<String> blackList = mBlackListDevices.get(deviceClass);
         if(blackList == null)
         {
-            blackList = new Vector<String>();
+            blackList = new LinkedList<String>();
             mBlackListDevices.put(deviceClass,blackList);
         }
         blackList.add(deviceName);
@@ -153,9 +169,14 @@ public class WarpDeviceManager {
 
     public synchronized void removeBlackListDevice(Class<? extends IWarpDevice> deviceClass, String deviceName)
     {
-        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        List<String> blackList = mBlackListDevices.get(deviceClass);
         if(blackList != null)
         {
+            if(deviceName == null)
+            {
+                mBlackListDevices.remove(deviceClass);
+                return;
+            }
             blackList.remove(deviceName);
             if(blackList.size() == 0)
             {
@@ -167,52 +188,12 @@ public class WarpDeviceManager {
     public synchronized boolean isOnBlackList(IWarpInteractiveDevice device)
     {
         Class<? extends IWarpDevice> deviceClass = device.getWarpDevice().getClass();
-        Vector<String> blackList = mBlackListDevices.get(deviceClass);
+        List<String> blackList = mBlackListDevices.get(deviceClass);
         if(blackList == null)
         {
             return false;
         }
         return blackList.contains(device.getWarpDevice().getDeviceName());
-    }
-
-    public synchronized void addDevice(IWarpInteractiveDevice device)
-    {
-        if(device != null)
-        {
-            Vector<IWarpInteractiveDevice> oldDevices = mWarpDevices.get(device.getWarpDevice().getClass());
-            if(oldDevices == null)
-            {
-                oldDevices = new Vector<IWarpInteractiveDevice>();
-                mWarpDevices.put(device.getWarpDevice().getClass(),oldDevices);
-            }
-            for(IWarpInteractiveDevice oldDevice : oldDevices)
-            {
-                if(oldDevice.getWarpDevice().getDeviceName().equals(device.getWarpDevice().getDeviceName()))
-                {
-                    oldDevice.updateDeviceData(device);
-                    return;
-                }
-            }
-            oldDevices.add(device);
-            mSize++;
-            if(mViewObserver != null)
-            {
-                mViewObserver.onWarpDeviceAdded(device);
-            }
-        }
-    }
-
-    public synchronized Set<String> getWarpDevicesNames()
-    {
-        Set<String> deviceNames = new HashSet<String>();
-        for(Vector<IWarpInteractiveDevice> devices : mWarpDevices.values())
-        {
-            for(IWarpInteractiveDevice device: devices)
-            {
-                deviceNames.add(device.getWarpDevice().getDeviceName());
-            }
-        }
-        return deviceNames;
     }
 
     public synchronized Collection<IWarpDevice> getWarpDevices()
@@ -256,6 +237,24 @@ public class WarpDeviceManager {
         return null;
     }
 
+    public synchronized IWarpInteractiveDevice getWarpDeviceByName(String deviceName,
+                    Class<? extends IWarpDevice> deviceClass)
+    {
+        Vector<IWarpInteractiveDevice> devices = mWarpDevices.get(deviceClass);
+        if(devices == null)
+        {
+            return null;
+        }
+        for(IWarpInteractiveDevice device : devices)
+        {
+            if(device.getWarpDevice().getDeviceName().equals(deviceName))
+            {
+                return device;
+            }
+        }
+        return null;
+    }
+
     public synchronized void removeWarpDevices(Class<? extends IWarpDevice> deviceClass)
     {
         Vector<IWarpInteractiveDevice> devices = mWarpDevices.remove(deviceClass);
@@ -269,7 +268,7 @@ public class WarpDeviceManager {
     }
 
     public synchronized IWarpInteractiveDevice [] getInteractiveDevicesByClass(
-            Class<? extends IWarpDevice> devicesClass)
+                    Class<? extends IWarpDevice> devicesClass)
     {
         Vector<IWarpInteractiveDevice> devices = mWarpDevices.get(devicesClass);
         return (devices != null) ? devices.toArray(new IWarpInteractiveDevice[devices.size()]) : null;

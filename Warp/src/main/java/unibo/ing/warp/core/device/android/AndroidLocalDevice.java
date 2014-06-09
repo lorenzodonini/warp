@@ -19,15 +19,9 @@ public class AndroidLocalDevice implements IWarpLocalDevice {
     private IWarpEngine mWarpDrive;
     private WarpLocation mDriveLocation;
 
-    public AndroidLocalDevice(Context context,WarpLocation location)
+    public AndroidLocalDevice(Context context,WarpLocation location, String masterKey)
     {
-        mWarpDrive=new AndroidWarpDrive(context);
-        //Adding Local Services
-        mWarpDrive.addWarpService(PushObjectService.class);
-        mWarpDrive.addWarpService(LookupService.class);
-        /*mWarpDrive.addWarpService(new ConnectionSetupService());
-        mWarpDrive.addWarpService(new WifiConnectService());
-        mWarpDrive.addWarpService(new WifiScanService());*/
+        mWarpDrive=new AndroidWarpDrive(context, masterKey);
         if(location != null && location.getIPv4Address() != null)
         {
             mDriveLocation = location;

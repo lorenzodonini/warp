@@ -2,8 +2,7 @@ package unibo.ing.warp.core;
 
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
-import unibo.ing.warp.core.service.handler.IWarpServiceResourcesHandler;
-import unibo.ing.warp.core.service.handler.WarpServiceResourcesHandlerManager;
+import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.warpable.IWarpable;
 
@@ -40,14 +39,6 @@ public interface IWarpEngine {
     public Collection<Class<? extends IWarpService>> getServiceList();
 
     /**
-     * Provides a WarpLocation object containing the IP address of the IWarpEngine instance.
-     * Useful to determine if the node is local or remote.
-     *
-     * @return  Returns the WarpLocation of the IWarpEngine
-     */
-    //public WarpLocation getWarpEngineLocation();
-
-    /**
      * If an implementation of IWarpEngine doesn't add specific services in the
      * constructor, these can be added at runtime calling this method.
      *
@@ -62,7 +53,7 @@ public interface IWarpEngine {
      * be able to subclass services and make them remote without too much effort.
      *
      * @param serviceName  The name of the service that needs to be invoked
-     * @param listener  The optional listener that needs to be set inside the IWarpService,
+     * @param listener  The optional callListener that needs to be set inside the IWarpService,
      *                  in order to perform an asynchronous callback once the service has ended
      * @param params  The optional paramaters passed to the service
      */
@@ -95,7 +86,7 @@ public interface IWarpEngine {
      *
      * @param serviceName  The name of the service that needs to be invoked
      * @param to  Destination IWarpDevice Object, needed for the Push operation
-     * @param listener  The optional listener that needs to be set inside the IWarpService,
+     * @param listener  The optional callListener that needs to be set inside the IWarpService,
      *                  in order to perform an asynchronous callback once the service has ended
      * @param params  The optional paramaters passed to the service
      */
@@ -111,7 +102,7 @@ public interface IWarpEngine {
      * @param serviceName  The name of the service that needs to be invoked
      * @param from  Source IWarpDevice Object, needed in order to perform a Pull
      *              operation towards the current IWarpEngine Object
-     * @param listener  The optional listener that needs to be set inside the IWarpService,
+     * @param listener  The optional callListener that needs to be set inside the IWarpService,
      *                  in order to perform an asynchronous callback once the service has ended
      * @param params  The optional paramaters passed to the service
      */
@@ -122,7 +113,9 @@ public interface IWarpEngine {
 
     public void startEngine();
     public void stopEngine();
-    public IWarpServiceListener getDefaultListenerForService(String serviceName, Object [] values);
-    public IWarpServiceResourcesHandler getDefaultHandlerForService(String serviceName);
-    public WarpServiceResourcesHandlerManager getServiceHandlerManager();
+
+    public IWarpServiceListener getListenerForService(String serviceName, Object[] values,
+                                               IWarpService.ServiceOperation operation);
+
+    public IWarpServiceLauncher getLauncherForService(String serviceName);
 }

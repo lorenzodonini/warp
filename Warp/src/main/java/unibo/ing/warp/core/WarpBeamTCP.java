@@ -15,19 +15,17 @@ import java.util.EnumSet;
  * Date: 16/11/13
  * Time: 01:10
  */
-public class WarpBeam implements IBeam{
+public class WarpBeamTCP implements IBeam{
     private Socket mSocket;
     private DataInputStream mInputStream;
     private DataOutputStream mOutputStream;
-    private IWarpEngine mWarpDrive;
     private EnumSet<WarpFlag> mFlags;
 
-    public WarpBeam(Socket socket, IWarpEngine engine, Collection<WarpFlag> flags) throws IOException
+    public WarpBeamTCP(Socket socket, Collection<WarpFlag> flags) throws IOException
     {
         mSocket=socket;
         mInputStream = new DataInputStream(mSocket.getInputStream());
         mOutputStream = new DataOutputStream(mSocket.getOutputStream());
-        mWarpDrive=engine;
         mFlags=(flags != null) ? EnumSet.copyOf(flags) : EnumSet.allOf(WarpFlag.class);
     }
 
@@ -54,9 +52,9 @@ public class WarpBeam implements IBeam{
     }
 
     @Override
-    public IWarpEngine getLocalWarpEngine()
+    public WarpLocation getPeerWarpLocation()
     {
-        return mWarpDrive;
+        return new WarpLocation(mSocket.getInetAddress());
     }
 
     /*############## FLAGS LOGIC ##############*/
@@ -104,6 +102,7 @@ public class WarpBeam implements IBeam{
     {
         mSocket.shutdownOutput();
         mSocket.close();
+        mSocket=null;
     }
 
     @Override

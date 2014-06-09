@@ -10,6 +10,8 @@ import android.os.Looper;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.core.service.launcher.android.WifiScanLauncher;
+import unibo.ing.warp.core.service.listener.android.WifiScanServiceListener;
 
 /**
  * User: lorenzodonini
@@ -17,7 +19,8 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
  * Time: 22:03
  */
 @WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL,name="scanService", label = "Scan WiFi",
-        target = WarpServiceInfo.Target.ANDROID, execution = WarpServiceInfo.ServiceExecution.CONCURRENT)
+        target = WarpServiceInfo.Target.ANDROID, execution = WarpServiceInfo.ServiceExecution.CONCURRENT,
+        callListener = WifiScanServiceListener.class, launcher = WifiScanLauncher.class)
 public class WifiScanService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;

@@ -13,8 +13,10 @@ public interface IWarpInteractiveDevice {
     public IWarpDevice getWarpDevice();
     public Object getView();
     public void setView(Object view);
-    public void connect(IWarpServiceListener listener);
-    public void disconnect(IWarpServiceListener listener);
+    public void connect();
+    public void disconnect();
+    public void callPushService(WarpServiceInfo serviceDescriptor);
+    public void callPullService(WarpServiceInfo serviceDescriptor);
     public Collection<WarpServiceInfo> getAvailableServices(IWarpServiceListener listener);
     public void addAvailableServices(Collection<WarpServiceInfo> services);
     public WarpDeviceStatus getDeviceStatus();

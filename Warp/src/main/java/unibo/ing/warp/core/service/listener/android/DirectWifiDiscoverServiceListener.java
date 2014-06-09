@@ -7,13 +7,12 @@ import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.android.AndroidP2PDevice;
 import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
-
 import java.util.Collection;
 
 /**
  * Created by Lorenzo Donini on 5/10/2014.
  */
-public class AndroidDirectWifiDiscoverServiceListener extends DefaultWarpServiceListener {
+public final class DirectWifiDiscoverServiceListener extends DefaultWarpServiceListener {
     private WarpAccessManager warpAccessManager;
 
     @Override
