@@ -49,14 +49,14 @@ public class WarpTCPDispatcherService extends DefaultWarpService {
         warpDrive=(IWarpEngine)params[0];
         mUserPermissionKey = (String)params[1];
         setContext(context);
-        bEnabled=true;
+        setEnabled(true);
 
         //Dispatching incoming requests
         Socket request;
         ServerSocket socket = new ServerSocket(LISTEN_PORT);
         socket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
 
-        while(bEnabled)
+        while(isEnabled())
         {
             try {
                 request = socket.accept(); //Receiving incoming connection
@@ -115,6 +115,16 @@ public class WarpTCPDispatcherService extends DefaultWarpService {
     public void stopService()
     {
         bEnabled = false;
+    }
+
+    private synchronized boolean isEnabled()
+    {
+        return bEnabled;
+    }
+
+    private synchronized void setEnabled(boolean enabled)
+    {
+        bEnabled=enabled;
     }
 
     private WarpServiceInfo performHandshake(IBeam warpBeam) throws IOException, JSONException

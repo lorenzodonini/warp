@@ -2,6 +2,8 @@ package unibo.ing.warp.core.device;
 
 import unibo.ing.warp.core.DefaultWarpInteractiveDevice;
 import unibo.ing.warp.core.IWarpEngine;
+import unibo.ing.warp.core.IWarpInteractiveDevice;
+import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.IWarpService.ServiceOperation;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.LookupService;
@@ -52,6 +54,63 @@ public class WarpAccessManager implements IWarpDeviceRequestHandler {
     public WarpDeviceManager getDeviceManager()
     {
         return mDeviceManager;
+    }
+
+    public final void startWarpService(Class<? extends IWarpService> serviceClass, String accessKey,
+                                 ServiceOperation operation, IWarpInteractiveDevice target)
+    {
+        WarpServiceInfo serviceDescriptor = WarpUtils.getWarpServiceInfo(serviceClass);
+        if(serviceDescriptor == null)
+        {
+            return;
+        }
+        IWarpEngine warpDrive = mLocalDevice.getWarpEngine();
+        IWarpServiceLauncher launcher = warpDrive.getLauncherForService(serviceDescriptor.name());
+        launcher.initializeService(WarpResourceLibrary.getInstance(), accessKey, operation);
+        IWarpServiceListener listener = warpDrive.getListenerForService(serviceDescriptor.name(),
+                launcher.getServiceListenerParameters(target,operation),operation);
+        if(serviceDescriptor.type() == WarpServiceInfo.Type.LOCAL)
+        {
+            warpDrive.callLocalService(serviceDescriptor.name(),listener,
+                    launcher.getServiceParameters(target,operation));
+        }
+        else if(serviceDescriptor.type() == WarpServiceInfo.Type.PUSH)
+        {
+            warpDrive.callPushService(serviceDescriptor.name(), target.getWarpDevice(), listener, null,
+                    launcher.getServiceParameters(target, operation), launcher.getServiceRemoteParameters());
+        }
+        else if(serviceDescriptor.type() == WarpServiceInfo.Type.PULL)
+        {
+            warpDrive.callPullService(serviceDescriptor.name(), target.getWarpDevice(), listener, null,
+                    launcher.getServiceParameters(target, operation), launcher.getServiceRemoteParameters());
+        }
+    }
+
+    public final void stopWarpService(Class<? extends IWarpService> serviceClass, String accessKey)
+    {
+        WarpServiceInfo serviceDescriptor = WarpUtils.getWarpServiceInfo(serviceClass);
+        if(serviceDescriptor == null)
+        {
+            return;
+        }
+        IWarpEngine warpDrive = mLocalDevice.getWarpEngine();
+        long [] serviceIds = warpDrive.getActiveServicesIdsByName(serviceDescriptor.name());
+        if(serviceIds != null && serviceIds.length > 0)
+        {
+            warpDrive.stopService(serviceIds[0]);
+        }
+    }
+
+    public final boolean isServiceActive(Class<? extends IWarpService> serviceClass, String accessKey)
+    {
+        WarpServiceInfo serviceDescriptor = WarpUtils.getWarpServiceInfo(serviceClass);
+        if(serviceDescriptor == null)
+        {
+            return false;
+        }
+        IWarpEngine warpDrive = mLocalDevice.getWarpEngine();
+        long [] serviceIds = warpDrive.getActiveServicesIdsByName(serviceDescriptor.name());
+        return serviceIds != null && serviceIds.length > 0;
     }
 
     //Single Device Request Handlers

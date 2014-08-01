@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
  */
 public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarpServiceObserver {
     private Map<String, Class<? extends IWarpService>> mRegisteredServices;
-    private static final int LIGHTWEIGHT_THREAD_NUM = 6;
+    private static final int LIGHTWEIGHT_THREAD_NUM = 10;
     private ExecutorService mExecutor;
     private Handler mHandler;
     private long mBaseId;
@@ -457,7 +457,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
                     launcher.setServiceToLaunchDescriptor(mInfo);
                     launcher.initializeService(WarpResourceLibrary.getInstance(),mMasterKey,
                             IWarpService.ServiceOperation.CALL);
-;
+
                     handshakeService.setWarpServiceHandler(taskHandler);
                     //Service is from now Handshaking
                     taskHandler.setHandledServiceStatus(IWarpService.ServiceStatus.HANDSHAKING);

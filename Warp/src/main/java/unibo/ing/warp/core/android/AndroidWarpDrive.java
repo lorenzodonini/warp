@@ -6,6 +6,7 @@ import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.*;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiConnectService;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
+import unibo.ing.warp.core.service.android.p2p.DirectWifiPingService;
 import unibo.ing.warp.core.service.android.wifi.WifiConnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
@@ -67,15 +68,19 @@ public class AndroidWarpDrive implements IWarpEngine {
 
         //ADDING CORE SERVICES
         addWarpService(WarpTCPDispatcherService.class);
+        addWarpService(WarpUDPDispatcherService.class);
         addWarpService(WarpHandshakeService.class);
         addWarpService(LookupService.class);
         addWarpService(PushObjectService.class);
+        addWarpService(WarpBeaconService.class);
         //ADDING ADDITIONAL SERVICES
+        addWarpService(WarpLighthouseService.class);
         addWarpService(WifiScanService.class);
         addWarpService(WifiConnectService.class);
         addWarpService(WifiDisconnectService.class);
         addWarpService(DirectWifiDiscoverService.class);
         addWarpService(DirectWifiConnectService.class);
+        addWarpService(DirectWifiPingService.class);
         addWarpService(PushFileService.class);
     }
 
@@ -116,8 +121,8 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             info = WarpUtils.getWarpServiceInfo(serviceClass);
         }
-        if(info != null && info.name().equals(serviceName) && info.protocol() == WarpServiceInfo.Protocol.NONE
-                && info.type()== WarpServiceInfo.Type.LOCAL)
+        if(info != null && info.name().equals(serviceName) && info.type()== WarpServiceInfo.Type.LOCAL
+                && info.protocol() == WarpServiceInfo.Protocol.NONE)
         {
             //Current found service is a Local Service
             mContainer.startLocalWarpService(serviceClass,info,this,listener,params);
@@ -168,7 +173,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,this,params);
+                mContainer.startServerRemoteWarpService(serviceClass, info, warpBeam, listener, this, params);
             }
             else
             {
@@ -196,7 +201,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             if(warpBeam != null && !(Boolean)warpBeam.getFlag(WarpFlag.MASTER.name()).getValue())
             {
-                mContainer.startServerRemoteWarpService(serviceClass,info,warpBeam,listener,this,params);
+                mContainer.startServerRemoteWarpService(serviceClass, info, warpBeam, listener, this, params);
             }
             else
             {

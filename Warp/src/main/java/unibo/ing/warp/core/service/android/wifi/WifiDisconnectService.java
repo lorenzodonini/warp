@@ -19,7 +19,8 @@ import unibo.ing.warp.view.IWarpDeviceViewAdapter;
  */
 @WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="disconnectFromAccessPoint", label = "Disconnect",
         target = WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT,
-        launcher = WifiDisconnectLauncher.class, callListener = WifiDisconnectServiceListener.class)
+        launcher = WifiDisconnectLauncher.class, callListener = WifiDisconnectServiceListener.class,
+        protocol = WarpServiceInfo.Protocol.NONE)
 public class WifiDisconnectService extends DefaultWarpService {
     private BroadcastReceiver mReceiver;
     private boolean bDisconnected;

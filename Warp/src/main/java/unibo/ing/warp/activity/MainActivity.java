@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -23,6 +25,8 @@ import unibo.ing.warp.core.service.IWarpService.ServiceOperation;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
+import unibo.ing.warp.core.service.base.WarpBeaconService;
+import unibo.ing.warp.core.service.base.WarpLighthouseService;
 import unibo.ing.warp.core.service.launcher.*;
 import unibo.ing.warp.core.service.launcher.android.*;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiConnectLauncher;
@@ -39,7 +43,6 @@ public class MainActivity extends Activity {
     private String mUserPermissionKey = "USER_KEY";
     private AndroidRemoteServicesPopup mServicesPopup;
     private WarpResourceLibrary mLibrary;
-    private String mWifiScanName;
     private String mWifiP2PDiscoverName;
     private static final long DEFAULT_DISCOVER_INTERVAL = 30000; //Every 30 seconds
 
@@ -54,9 +57,7 @@ public class MainActivity extends Activity {
         final WifiP2pManager.Channel channel = p2pManager.initialize(this, getMainLooper(), null);
 
         //Adding some service names
-        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WifiScanService.class);
-        mWifiScanName = info.name();
-        info = WarpUtils.getWarpServiceInfo(DirectWifiDiscoverService.class);
+        WarpServiceInfo info = WarpUtils.getWarpServiceInfo(DirectWifiDiscoverService.class);
         mWifiP2PDiscoverName = info.name();
 
         //Creating Local Device
@@ -71,10 +72,11 @@ public class MainActivity extends Activity {
         mLibrary.setResource(WifiScanLauncher.WIFI_FORCE_ENABLE_KEY, mAccessKey, true);
         mLibrary.setResource(DirectWifiDiscoverLauncher.DISCOVERY_INTERVAL_KEY, mAccessKey,
                 DEFAULT_DISCOVER_INTERVAL+10000);
+        mLibrary.setResource(WarpBeaconLauncher.BROADCAST_INTERVAL_KEY,mAccessKey,
+                DEFAULT_DISCOVER_INTERVAL*2);
         mLibrary.setResource(DirectWifiDiscoverLauncher.P2P_CHANNEL_KEY, mAccessKey, channel);
         mLibrary.setResource(DirectWifiConnectLauncher.P2P_OWNER_PRIORITY_KEY, mAccessKey, 15);
-
-        //TODO: Add Non-core Services
+        //TODO: Add any additional resource that may be needed
 
         mReceiver = new AndroidNetworkStateManager(manager,wifiManager,p2pManager,mAccessKey);
         IntentFilter filter = new IntentFilter();
@@ -94,6 +96,24 @@ public class MainActivity extends Activity {
             }
         });
         manager.getDeviceManager().setViewObserver(mListAdapter);
+
+        //Checking if already connected to a Network
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        if(connectivityManager != null)
+        {
+            NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+            if(netInfo != null && netInfo.isConnected())
+            {
+                if(!manager.isServiceActive(WarpBeaconService.class,mAccessKey))
+                {
+                    manager.startWarpService(WarpBeaconService.class,mAccessKey,ServiceOperation.CALL,null);
+                }
+                if(!manager.isServiceActive(WarpLighthouseService.class,mAccessKey))
+                {
+                    manager.startWarpService(WarpLighthouseService.class, mAccessKey, ServiceOperation.CALL, null);
+                }
+            }
+        }
     }
 
     @Override
@@ -177,29 +197,22 @@ public class MainActivity extends Activity {
     private void toggleWifi(MenuItem item)
     {
         WarpAccessManager manager = WarpAccessManager.getInstance(mAccessKey);
-        IWarpEngine warpDrive = manager.getLocalDevice().getWarpEngine();
-        long [] runningServicesIds = warpDrive.getActiveServicesIdsByName(mWifiScanName);
-        if(runningServicesIds == null)
+        if(manager.isServiceActive(WifiScanService.class,mAccessKey))
         {
-            //Create service!
-            IWarpServiceLauncher wifiScanLauncher = warpDrive.getLauncherForService(mWifiScanName);
-            wifiScanLauncher.initializeService(mLibrary,mAccessKey, ServiceOperation.CALL);
-            IWarpServiceListener wifiScanListener = warpDrive.getListenerForService(
-                    mWifiScanName, wifiScanLauncher.getServiceListenerParameters(null,
-                    ServiceOperation.CALL), ServiceOperation.CALL);
-            warpDrive.callLocalService(mWifiScanName, wifiScanListener,
-                    wifiScanLauncher.getServiceParameters(null, ServiceOperation.CALL));
-            item.setIcon(R.drawable.ic_action_wifi);
-        }
-        else
-        {
-            //Stop service!
-            warpDrive.stopService(runningServicesIds[0]);
+            //Stop service
+            manager.stopWarpService(WifiScanService.class,mAccessKey);
             manager.getDeviceManager().removeWarpDevices(AndroidWifiHotspot.class);
             item.setIcon(R.drawable.ic_action_wifi_disabled);
         }
+        else
+        {
+            //Start service
+            manager.startWarpService(WifiScanService.class,mAccessKey,ServiceOperation.CALL,null);
+            item.setIcon(R.drawable.ic_action_wifi);
+        }
     }
 
+    //TODO: edit this handler
     private void toggleWifiDirect(MenuItem item)
     {
         WarpAccessManager manager = WarpAccessManager.getInstance(mAccessKey);

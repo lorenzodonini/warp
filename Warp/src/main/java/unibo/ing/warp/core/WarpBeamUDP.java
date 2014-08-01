@@ -45,6 +45,18 @@ public class WarpBeamUDP implements IBeam {
         return 0;
     }
 
+    private int getDefaultTimeout()
+    {
+        for (WarpFlag flag: mFlags)
+        {
+            if(flag == WarpFlag.TIMEOUT)
+            {
+                return (Integer)flag.getValue();
+            }
+        }
+        return 0;
+    }
+
     @Override
     public int beamWarpable(IWarpable object) throws IOException, JSONException
     {
@@ -67,14 +79,12 @@ public class WarpBeamUDP implements IBeam {
     @Override
     public int receiveWarpable(IWarpable result) throws IOException, JSONException
     {
-
         int messageSize = getDefaultMessageSize();
         byte [] buf = new byte[messageSize];
         DatagramPacket incomingPacket = new DatagramPacket(buf,messageSize);
         if(mSocket != null && !mSocket.isClosed())
         {
-            //TODO: set timeout properly!
-            mSocket.setSoTimeout(1000);
+            mSocket.setSoTimeout(getDefaultTimeout());
             mSocket.receive(incomingPacket);
             mRemoteLocation.setIPv4Address(incomingPacket.getAddress());
             return result.warpFrom(incomingPacket.getData());

@@ -26,7 +26,8 @@ import java.util.Collection;
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, name="p2pDiscovery", label = "WiFi-Direct Discovery",
         execution = WarpServiceInfo.ServiceExecution.CONCURRENT, target=WarpServiceInfo.Target.ANDROID,
-        launcher = DirectWifiDiscoverLauncher.class, callListener = DirectWifiDiscoverServiceListener.class)
+        launcher = DirectWifiDiscoverLauncher.class, callListener = DirectWifiDiscoverServiceListener.class,
+        protocol = WarpServiceInfo.Protocol.NONE)
 public class DirectWifiDiscoverService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;

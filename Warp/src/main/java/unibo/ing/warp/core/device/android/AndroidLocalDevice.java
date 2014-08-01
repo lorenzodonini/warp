@@ -6,8 +6,6 @@ import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.utils.android.AndroidUtils;
 import unibo.ing.warp.core.android.AndroidWarpDrive;
 import unibo.ing.warp.core.device.IWarpLocalDevice;
-import unibo.ing.warp.core.service.base.LookupService;
-import unibo.ing.warp.core.service.base.PushObjectService;
 import java.net.InetAddress;
 
 /**
@@ -34,10 +32,10 @@ public class AndroidLocalDevice implements IWarpLocalDevice {
                 public void onAddressRetrieved(InetAddress address) {
                     mDriveLocation = new WarpLocation();
                     mDriveLocation.setIPv4Address(address);
-                    mWarpDrive.startEngine();
                 }
             });
         }
+        mWarpDrive.startEngine(); //TODO: Need to check if it produces any random bug!
     }
     @Override
     public String getDeviceName()

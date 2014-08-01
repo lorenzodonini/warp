@@ -20,20 +20,20 @@ import unibo.ing.warp.core.service.listener.android.WifiScanServiceListener;
  */
 @WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL,name="scanService", label = "Scan WiFi",
         target = WarpServiceInfo.Target.ANDROID, execution = WarpServiceInfo.ServiceExecution.CONCURRENT,
-        callListener = WifiScanServiceListener.class, launcher = WifiScanLauncher.class)
+        callListener = WifiScanServiceListener.class, launcher = WifiScanLauncher.class,
+        protocol = WarpServiceInfo.Protocol.NONE)
 public class WifiScanService extends DefaultWarpService {
     private boolean bEnabled=false;
     private BroadcastReceiver mReceiver;
     private Looper mLooper;
-    private Handler mHandler;
+    private Handler mScanHandler;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,2);
+        checkOptionalParameters(params,1);
         Context androidContext = (Context)context;
-        long discoverInterval = (Long)params[0];
-        boolean forceEnable = (Boolean)params[1];
+        boolean forceEnable = (Boolean)params[0];
 
         setContext(androidContext);
         mReceiver=new BroadcastReceiver() {
@@ -44,10 +44,10 @@ public class WifiScanService extends DefaultWarpService {
         };
         Looper.prepare();
         mLooper = Looper.myLooper();
-        mHandler = new Handler();
+        mScanHandler = new Handler();
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        androidContext.registerReceiver(mReceiver,filter,null,mHandler);
+        androidContext.registerReceiver(mReceiver,filter,null, mScanHandler);
         setEnabled(true);
         scanOperation(forceEnable);
     }

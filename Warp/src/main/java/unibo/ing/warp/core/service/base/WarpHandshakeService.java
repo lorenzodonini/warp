@@ -6,7 +6,6 @@ import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.WarpHandshakeLauncher;
 import unibo.ing.warp.core.warpable.*;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -19,8 +18,7 @@ import java.util.EnumSet;
  * Time: 01:34
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label="Handshake",
-        target = WarpServiceInfo.Target.ALL, name="warpHandshake",
-        launcher = WarpHandshakeLauncher.class)
+        target = WarpServiceInfo.Target.ALL, name="warpHandshake", launcher = WarpHandshakeLauncher.class)
 public class WarpHandshakeService extends DefaultWarpService {
     private IBeam mWarpBeam =null;
     private String mErrorMessage = "TEST";

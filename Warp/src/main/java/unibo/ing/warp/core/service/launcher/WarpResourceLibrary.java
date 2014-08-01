@@ -16,6 +16,7 @@ public final class WarpResourceLibrary {
     public static final String RES_SERVICE_TO_CALL = "chainedService";
     public static final String RES_DEFAULT_APPLICATION = "defaultApplication";
     public static final String RES_USER_PERMISSION_KEY = "userPermissionKey";
+    public static final String RES_LOCAL_IP_ADDRESS = "broadcastAddress";
 
     private WarpResourceLibrary()
     {

@@ -17,10 +17,10 @@ import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.android.WifiConnectLauncher;
 import unibo.ing.warp.core.service.listener.android.WifiConnectServiceListener;
+import unibo.ing.warp.utils.WarpUtils;
 import unibo.ing.warp.view.DialogFragmentListener;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 import unibo.ing.warp.view.PasswordDialogFragment;
-
 import java.util.List;
 
 /**
@@ -30,9 +30,11 @@ import java.util.List;
  */
 @WarpServiceInfo(type=WarpServiceInfo.Type.LOCAL,name="connectToAccessPoint", label = "Connect", target =
         WarpServiceInfo.Target.ANDROID, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT,
-        launcher = WifiConnectLauncher.class, callListener = WifiConnectServiceListener.class)
+        launcher = WifiConnectLauncher.class, callListener = WifiConnectServiceListener.class,
+        protocol = WarpServiceInfo.Protocol.NONE)
 public class WifiConnectService extends DefaultWarpService {
     private boolean bConnected;
+    private boolean bCanCommunicateWith;
     private BroadcastReceiver mReceiver;
     private IWarpDevice mWifiAccessPoint;
     private WifiConfiguration mWifiConfiguration;
@@ -330,6 +332,7 @@ public class WifiConnectService extends DefaultWarpService {
         Context context = (Context)getContext();
         context.unregisterReceiver(mReceiver);
         mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
+        WarpUtils.checkNetworkInterfaces(); //TODO: NOT NEEDED!
 
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
@@ -351,7 +354,8 @@ public class WifiConnectService extends DefaultWarpService {
     @Override
     public Object[] getResult()
     {
-        return new Object [] {(bConnected) ? CONNECTED : FAILED};
+        //What about IP discovery?
+        return new Object [] {(bConnected) ? CONNECTED : FAILED, bCanCommunicateWith};
     }
 
     @Override

@@ -1,6 +1,6 @@
 package unibo.ing.warp.core;
 
-import java.math.BigInteger;
+import unibo.ing.warp.utils.WarpUtils;
 import java.net.InetAddress;
 
 /**
@@ -77,21 +77,7 @@ public class WarpLocation {
      */
     public synchronized void setIPv4Address(int addr)
     {
-        byte bytes [] = BigInteger.valueOf(addr).toByteArray();
-        byte inetAddrBytes [];
-        if(bytes.length==5)
-        {
-            inetAddrBytes=new byte[4];
-            for(int i=1; i<bytes.length; i++)
-            {
-                inetAddrBytes[i-1]=bytes[i];
-            }
-        }
-        else
-        {
-            inetAddrBytes=bytes;
-        }
-        setIPv4Address(inetAddrBytes);
+        setIPv4Address(WarpUtils.getRawIPv4AddressFromInt(addr));
     }
 
     /**

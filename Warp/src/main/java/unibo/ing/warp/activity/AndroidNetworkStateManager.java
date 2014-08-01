@@ -14,17 +14,17 @@ import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.WarpDeviceManager;
 import unibo.ing.warp.core.device.android.AndroidP2PDevice;
 import unibo.ing.warp.core.device.android.AndroidWifiHotspot;
-import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.IWarpService.ServiceOperation;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiPingService;
+import unibo.ing.warp.core.service.base.WarpBeaconService;
+import unibo.ing.warp.core.service.base.WarpLighthouseService;
 import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
 import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiDiscoverLauncher;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiPingLauncher;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.utils.WarpUtils;
-
 import java.util.Collection;
 
 /**
@@ -62,6 +62,9 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
             {
                 ((DefaultWarpInteractiveDevice)device).setDeviceStatus(
                         IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED);
+                //Stopping network ping services
+                mWarpAccessManager.stopWarpService(WarpBeaconService.class,mMasterKey);
+                mWarpAccessManager.stopWarpService(WarpLighthouseService.class,mMasterKey);
                 return;
             }
         }
@@ -81,6 +84,21 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
             {
                 ((DefaultWarpInteractiveDevice)device).setDeviceStatus(
                         IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED);
+                byte [] ipAddress = WarpUtils.getRawIPv4AddressFromInt(mWifiManager.
+                        getConnectionInfo().getIpAddress());
+                WarpResourceLibrary.getInstance().setResource(WarpResourceLibrary.
+                        RES_LOCAL_IP_ADDRESS,mMasterKey,ipAddress);
+                //Starting network ping services
+                if(!mWarpAccessManager.isServiceActive(WarpBeaconService.class,mMasterKey))
+                {
+                    mWarpAccessManager.startWarpService(WarpBeaconService.class, mMasterKey,
+                            ServiceOperation.CALL, null);
+                }
+                if(!mWarpAccessManager.isServiceActive(WarpLighthouseService.class,mMasterKey))
+                {
+                    mWarpAccessManager.startWarpService(WarpLighthouseService.class, mMasterKey,
+                            ServiceOperation.CALL, null);
+                }
                 return;
             }
         }
@@ -159,13 +177,7 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
                     mMasterKey,group);
 
             //Updating group OWNER with Location, Status
-            if(group.isGroupOwner())
-            {
-                //I am group owner, therefore I don't know any other IP address.
-                //The group owner hopes to get pings from other peers, in order to
-                //obtain their IP address.
-            }
-            else
+            if(!group.isGroupOwner())
             {
                 //I'm not group owner, I know the owner's IP address but not the other IPs.
                 WifiP2pDevice owner = group.getOwner();
@@ -186,6 +198,9 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
                 }
                 startDirectWifiPing(ownerDevice); //Need to ping the group owner, so he can know our IP
             }
+            /*In case I am group owner, I don't know any other IP address.
+            The group owner hopes to get pings from other peers, in order to
+            obtain their IP address. */
 
             //Adding or updating other clients
             Collection<WifiP2pDevice> devices = group.getClientList();

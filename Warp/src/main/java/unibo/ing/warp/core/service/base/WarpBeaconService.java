@@ -4,7 +4,7 @@ import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.WarpBeaconLauncher;
-
+import unibo.ing.warp.core.service.listener.WarpBeaconServiceListener;
 import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.*;
@@ -12,55 +12,62 @@ import java.util.*;
 /**
  * Created by Lorenzo Donini on 5/17/2014.
  */
-@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label = "Beacon", execution =
-        WarpServiceInfo.ServiceExecution.CONCURRENT, name = "beacon",
-        launcher = WarpBeaconLauncher.class)
+@WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label = "Beacon", name = "beaconService",
+        execution = WarpServiceInfo.ServiceExecution.CONCURRENT, launcher = WarpBeaconLauncher.class,
+        protocol = WarpServiceInfo.Protocol.NONE, callListener = WarpBeaconServiceListener.class)
 public class WarpBeaconService extends DefaultWarpService {
     private boolean bEnabled;
     private Map<InetAddress, String []> mResult;
+    private Map<InetAddress, Long> mResultTimeout;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        //TODO: TO TEST
         checkOptionalParameters(params,1);
+        setEnabled(true);
         mResult = new HashMap<InetAddress, String[]>();
+        mResultTimeout = new HashMap<InetAddress, Long>();
         long defaultInterval = (Long)params[0];
+        long currentInterval;
+        long deviceTimeout;
+        long startTime;
+        boolean bChanged;
         DatagramSocket socket = new DatagramSocket();
-        socket.setSoTimeout(WarpLighthouseService.DEFAULT_SOCKET_TIMEOUT);
         InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress());
         String [] availableServicesNames;
         byte [] data = new byte[WarpLighthouseService.PACKET_SIZE];
-        boolean bChanged;
-        data[0] = WarpLighthouseService.BEACON_PING;
+        byte [] ping = new byte[] {WarpLighthouseService.BEACON_PING};
 
-        DatagramPacket packet = new DatagramPacket(data,data.length,
+        //Sending only a ping for broadcast, then expecting results
+        DatagramPacket broadcastPacket = new DatagramPacket(ping, ping.length,
                 broadcastAddress,WarpLighthouseService.LISTEN_PORT);
+        DatagramPacket unicastPacket = new DatagramPacket(data,data.length);
 
         //Starting service
         while(isEnabled())
         {
-            socket.send(packet);
-            bChanged=false;
+            startTime = System.currentTimeMillis();
+            currentInterval = defaultInterval;
+            socket.send(broadcastPacket);
             while(true)
             {
                 try{
-                    socket.receive(packet);
-                    socket.receive(packet);
-                    InetAddress senderAddress = packet.getAddress();
-                    availableServicesNames = Arrays.toString(packet.getData()).split(";");
-                    if(mResult.containsKey(senderAddress))
+                    currentInterval = currentInterval - (System.currentTimeMillis() - startTime);
+                    socket.setSoTimeout((int)currentInterval);
+                    //Change dimensions of packet?!
+                    socket.receive(unicastPacket);
+                    InetAddress senderAddress = unicastPacket.getAddress();
+                    availableServicesNames = Arrays.toString(unicastPacket.getData()).split(";");
+                    //Updating result
+                    if(!mResult.containsKey(senderAddress))
                     {
-                        if(mResult.get(senderAddress).length != availableServicesNames.length)
-                        {
-                            mResult.put(senderAddress,availableServicesNames);
-                            bChanged=true;
-                        }
+                        mResult.put(senderAddress,availableServicesNames);
+                        mResultTimeout.put(senderAddress,defaultInterval*3);
+                        getWarpServiceHandler().onServiceProgressUpdate(this);
                     }
                     else
                     {
-                        mResult.put(senderAddress,availableServicesNames);
-                        bChanged=true;
+                        mResultTimeout.put(senderAddress,defaultInterval*3);
                     }
                 }
                 catch (InterruptedIOException e)
@@ -68,11 +75,28 @@ public class WarpBeaconService extends DefaultWarpService {
                     break;
                 }
             }
+            //Decreasing time in which devices have last been seen
+            bChanged=false;
+            for(InetAddress address: mResult.keySet())
+            {
+                deviceTimeout = mResultTimeout.get(address);
+                deviceTimeout-= defaultInterval;
+                //Removing elements that aren't reachable anymore
+                if(deviceTimeout <= 0)
+                {
+                    mResult.remove(address);
+                    mResultTimeout.remove(address);
+                    bChanged=true;
+                }
+                else
+                {
+                    mResultTimeout.put(address,deviceTimeout);
+                }
+            }
             if(bChanged)
             {
                 getWarpServiceHandler().onServiceProgressUpdate(this);
             }
-            Thread.sleep(defaultInterval);
         }
     }
 
@@ -93,7 +117,11 @@ public class WarpBeaconService extends DefaultWarpService {
             {
                 for (InterfaceAddress interfaceAddress : ni.getInterfaceAddresses())
                 {
-                    return interfaceAddress.getBroadcast().toString().substring(1);
+                    InetAddress broadcast = interfaceAddress.getBroadcast();
+                    if(broadcast != null)
+                    {
+                        return broadcast.toString().substring(1);
+                    }
                 }
             }
         }

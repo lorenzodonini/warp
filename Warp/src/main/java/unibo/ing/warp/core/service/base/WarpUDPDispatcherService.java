@@ -43,7 +43,7 @@ public class WarpUDPDispatcherService extends DefaultWarpService {
         warpDrive = (IWarpEngine)params[0];
         mUserPermissionKey = (String)params[1];
         setContext(context);
-        bEnabled = true;
+        setEnabled(true);
 
         //Dispatching incoming requests
         DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
@@ -102,6 +102,11 @@ public class WarpUDPDispatcherService extends DefaultWarpService {
     private synchronized boolean isEnabled()
     {
         return bEnabled;
+    }
+
+    private synchronized void setEnabled(boolean enabled)
+    {
+        bEnabled=enabled;
     }
 
     @Override

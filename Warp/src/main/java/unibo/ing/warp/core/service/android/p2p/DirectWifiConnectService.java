@@ -19,14 +19,16 @@ import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiConnectLauncher;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiPingLauncher;
 import unibo.ing.warp.core.service.listener.android.DirectWifiConnectServiceListener;
+import unibo.ing.warp.utils.WarpUtils;
 import unibo.ing.warp.view.IWarpDeviceViewAdapter;
 
 /**
  * Created by Lorenzo Donini on 5/23/2014.
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, target = WarpServiceInfo.Target.ANDROID,
-        completion = WarpServiceInfo.ServiceCompletion.EXPLICIT, name = "directWifiConnect", label="Connect",
-        launcher = DirectWifiConnectLauncher.class, callListener = DirectWifiConnectServiceListener.class)
+        protocol = WarpServiceInfo.Protocol.NONE, completion = WarpServiceInfo.ServiceCompletion.EXPLICIT,
+        name = "directWifiConnect", label="Connect", launcher = DirectWifiConnectLauncher.class,
+        callListener = DirectWifiConnectServiceListener.class)
 public class DirectWifiConnectService extends DefaultWarpService {
     private IWarpDevice mWifiDirectDevice;
     private BroadcastReceiver mReceiver;
@@ -157,6 +159,7 @@ public class DirectWifiConnectService extends DefaultWarpService {
         Context context = (Context)getContext();
         context.unregisterReceiver(mReceiver);
         mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
+        WarpUtils.checkNetworkInterfaces();
 
         WifiP2pDevice device = (WifiP2pDevice) mWifiDirectDevice.getAbstractDevice();
         if(!group.isGroupOwner())
