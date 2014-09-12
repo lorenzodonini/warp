@@ -1,6 +1,7 @@
 package unibo.ing.warp.core.android;
 
 import android.os.Handler;
+import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpServiceObserver;
 import unibo.ing.warp.core.IWarpEngine;
@@ -15,16 +16,17 @@ import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.base.WarpHandshakeService;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Created by Lorenzo Donini on 4/16/2014.
  */
 public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarpServiceObserver {
     private Map<String, Class<? extends IWarpService>> mRegisteredServices;
-    private static final int LIGHTWEIGHT_THREAD_NUM = 10;
-    private ExecutorService mExecutor;
+    private static final int THREAD_CORE_NUM = 5;
+    private static final int THREAD_MAX_NUM = 10;
+    private static final int THREAD_KEEP_ALIVE_TIME = 100;
+    private ThreadPoolExecutor mExecutor;
     private Handler mHandler;
     private long mBaseId;
     private String mMasterKey;
@@ -52,7 +54,9 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         {
             mExecutor.shutdown();
         }
-        mExecutor= Executors.newFixedThreadPool(LIGHTWEIGHT_THREAD_NUM);
+        mExecutor = new ThreadPoolExecutor(THREAD_CORE_NUM,THREAD_MAX_NUM,THREAD_KEEP_ALIVE_TIME,
+                TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>());
+        Log.d("WARP.DEBUG","AndroidWarpServiceContainer.startContainer");
     }
 
     @Override

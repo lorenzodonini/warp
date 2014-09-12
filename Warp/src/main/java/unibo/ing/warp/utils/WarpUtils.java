@@ -20,6 +20,7 @@ import java.util.Map;
 public class WarpUtils {
     private static Map<String,String> serviceLabels = new HashMap<String, String>();
     private static String filePath = "/temp";
+    public static final String DEBUG_TAG = "WARP-DEBUG";
 
     /**
      * Utility method that is needed every time a Service is invoked. Reflection
