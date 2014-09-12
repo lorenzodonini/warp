@@ -1,6 +1,7 @@
 package unibo.ing.warp.core.android;
 
 import android.content.Context;
+import android.util.Log;
 import unibo.ing.warp.core.*;
 import unibo.ing.warp.core.device.IWarpDevice;
 import unibo.ing.warp.core.service.*;
@@ -12,6 +13,7 @@ import unibo.ing.warp.core.service.android.wifi.WifiDisconnectService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.base.*;
 import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
+import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.service.listener.DefaultEmptyWarpServiceListener;
 import unibo.ing.warp.core.service.listener.DefaultWarpServiceListener;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
@@ -50,6 +52,7 @@ public class AndroidWarpDrive implements IWarpEngine {
     private Context mContext;
     private IWarpServiceContainer mContainer;
     private Map<String, WarpServiceInfo> mDescriptors;
+    private String mMasterKey;
 
     /**
      * This constructor should be called for remote WarpDrives, since it doesn't set a Context,
@@ -63,6 +66,7 @@ public class AndroidWarpDrive implements IWarpEngine {
         {
             mContext=context;
         }
+        mMasterKey=masterKey;
         mContainer= new AndroidWarpServiceContainer(masterKey);
         mDescriptors = new HashMap<String, WarpServiceInfo>();
 
@@ -224,9 +228,13 @@ public class AndroidWarpDrive implements IWarpEngine {
         If the container Activity is garbaged though, the background Thread will be killed,
         instead of acting as a System service. */
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(WarpTCPDispatcherService.class);
-        callLocalService(info.name(),null,new Object [] {this});
-        info = WarpUtils.getWarpServiceInfo(WarpUDPDispatcherService.class);
-        callLocalService(info.name(),null,new Object [] {this});
+        IWarpServiceLauncher launcher = getLauncherForService(info.name());
+        launcher.initializeService(WarpResourceLibrary.getInstance(),mMasterKey,
+                IWarpService.ServiceOperation.CALL);
+        callLocalService(info.name(), null, launcher.getServiceParameters(null, IWarpService.ServiceOperation.CALL));
+        Log.d("WARP-DEBUG","AndroidWarpDrive.startEngine");
+        //info = WarpUtils.getWarpServiceInfo(WarpTCPDispatcherService.class);
+        //callLocalService(info.name(),null, launcher.getServiceParameters(null, IWarpService.ServiceOperation.CALL));
     }
 
     @Override

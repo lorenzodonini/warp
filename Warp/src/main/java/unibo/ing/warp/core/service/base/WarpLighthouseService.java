@@ -19,7 +19,7 @@ import java.util.*;
         launcher = WarpLighthouseLauncher.class, protocol = WarpServiceInfo.Protocol.NONE)
 public class WarpLighthouseService extends DefaultWarpService {
     public static final int LISTEN_PORT=13837;
-    public static final int DEFAULT_SOCKET_TIMEOUT=1800000;
+    public static final int DEFAULT_SOCKET_TIMEOUT=180000;
     public static final byte BEACON_PING = 33;
     public static final int PACKET_SIZE = 4096;
     private static final String MULTICAST_LOCK_TAG = "warp.unibo.it";
@@ -47,6 +47,7 @@ public class WarpLighthouseService extends DefaultWarpService {
         //Setting up the broadcast socket
         MulticastSocket broadcastSocket = new MulticastSocket(LISTEN_PORT);
         broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
+        String broad = getBroadcastAddress();
         broadcastSocket.joinGroup(InetAddress.getByName(getBroadcastAddress()));
         DatagramSocket socket = new DatagramSocket();
         socket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);

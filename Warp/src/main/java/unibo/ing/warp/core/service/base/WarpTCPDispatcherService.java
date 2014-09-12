@@ -29,14 +29,14 @@ import java.util.EnumSet;
  */
 @WarpServiceInfo(type= WarpServiceInfo.Type.LOCAL, label = "Dispatch", execution =
         WarpServiceInfo.ServiceExecution.CONCURRENT, name="tcpServiceDispatcher",
-        launcher = WarpDispatcherLauncher.class)
+        launcher = WarpDispatcherLauncher.class, protocol = WarpServiceInfo.Protocol.NONE)
 public class WarpTCPDispatcherService extends DefaultWarpService {
     private IWarpEngine warpDrive;
     private String mUserPermissionKey;
     private Object [] mParams;
     private boolean bEnabled;
     public static final int LISTEN_PORT=13837;
-    public static final int DEFAULT_SOCKET_TIMEOUT=1800000;
+    public static final int DEFAULT_SOCKET_TIMEOUT=180000;
     public static final String SERVICE_REQUEST_ACCEPTED="OK";
     public static final String SERVICE_REQUEST_REFUSED="ABORT";
     public static final String EXTRA_PARAMETERS="EXTRA";
