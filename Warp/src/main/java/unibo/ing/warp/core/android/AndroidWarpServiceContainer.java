@@ -23,8 +23,9 @@ import java.util.concurrent.*;
  */
 public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarpServiceObserver {
     private Map<String, Class<? extends IWarpService>> mRegisteredServices;
-    private static final int THREAD_CORE_NUM = 5;
-    private static final int THREAD_MAX_NUM = 10;
+    private static final int THREAD_CORE_NUM = 8;
+    private static final int THREAD_MAX_NUM = 8;
+    private static final int QUEUE_MAX = 5;
     private static final int THREAD_KEEP_ALIVE_TIME = 100;
     private ThreadPoolExecutor mExecutor;
     private Handler mHandler;
@@ -55,7 +56,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
             mExecutor.shutdown();
         }
         mExecutor = new ThreadPoolExecutor(THREAD_CORE_NUM,THREAD_MAX_NUM,THREAD_KEEP_ALIVE_TIME,
-                TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>());
+                TimeUnit.MILLISECONDS,new ArrayBlockingQueue<Runnable>(QUEUE_MAX));
         Log.d("WARP.DEBUG","AndroidWarpServiceContainer.startContainer");
     }
 
@@ -70,7 +71,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public WarpServiceInfo registerWarpService(Class<? extends IWarpService> warpService)
+    public synchronized WarpServiceInfo registerWarpService(Class<? extends IWarpService> warpService)
     {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(warpService);
         if(info != null && !mRegisteredServices.containsKey(info.name()))
@@ -81,55 +82,55 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public boolean unregisterWarpService(String serviceName)
+    public synchronized boolean unregisterWarpService(String serviceName)
     {
         return mRegisteredServices.remove(serviceName)!=null;
     }
 
     @Override
-    public boolean isWarpServiceRegistered(String serviceName)
+    public synchronized boolean isWarpServiceRegistered(String serviceName)
     {
         return mRegisteredServices.containsKey(serviceName);
     }
 
     @Override
-    public Collection<Class<? extends IWarpService>> getRegisteredWarpServices()
+    public synchronized Collection<Class<? extends IWarpService>> getRegisteredWarpServices()
     {
         return mRegisteredServices.values();
     }
 
     @Override
-    public Collection<String> getRegisteredWarpServicesNames()
+    public synchronized Collection<String> getRegisteredWarpServicesNames()
     {
         return mRegisteredServices.keySet();
     }
 
     @Override
-    public Class<? extends IWarpService> getRegisteredWarpServiceByName(String serviceName)
+    public synchronized Class<? extends IWarpService> getRegisteredWarpServiceByName(String serviceName)
     {
         return mRegisteredServices.get(serviceName);
     }
 
     @Override
-    public boolean isWarpServiceRunning(String serviceName)
+    public synchronized boolean isWarpServiceRunning(String serviceName)
     {
         return mServicesIds.containsKey(serviceName) && mServicesIds.get(serviceName).size() > 0;
     }
 
     @Override
-    public Collection<IWarpService> getWarpServiceRunningInstances()
+    public synchronized Collection<IWarpService> getWarpServiceRunningInstances()
     {
         return mRunningServices.values();
     }
 
     @Override
-    public IWarpService getRunningServiceInstanceById(long serviceId)
+    public synchronized IWarpService getRunningServiceInstanceById(long serviceId)
     {
         return mRunningServices.get(serviceId);
     }
 
     @Override
-    public long [] getRunningServicesIdsByName(String serviceName)
+    public synchronized long [] getRunningServicesIdsByName(String serviceName)
     {
         Collection<Long> ids = mServicesIds.get(serviceName);
         if(ids == null)
@@ -146,7 +147,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public Collection<IWarpService> getWarpRunningServiceInstancesByName(String serviceName)
+    public synchronized Collection<IWarpService> getWarpRunningServiceInstancesByName(String serviceName)
     {
         Collection<Long> ids = mServicesIds.get(serviceName);
         if(ids == null)
@@ -174,14 +175,14 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public IWarpService.ServiceStatus getWarpServiceStatus(long serviceId)
+    public synchronized IWarpService.ServiceStatus getWarpServiceStatus(long serviceId)
     {
         IWarpService service = mRunningServices.get(serviceId);
         return (service != null) ? service.getServiceStatus() : null;
     }
 
     @Override
-    public void startLocalWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
+    public synchronized void startLocalWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
                                       IWarpEngine callerEngine, IWarpServiceListener listener, Object [] params)
     {
         //LOCAL SERVICE
@@ -241,7 +242,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         return mBaseId++;
     }
 
-    private IWarpService initializeWarpServiceToStart(WarpServiceInfo serviceInfo)
+    private synchronized IWarpService initializeWarpServiceToStart(WarpServiceInfo serviceInfo)
             throws IllegalAccessException, InstantiationException {
         if(serviceInfo != null)
         {
@@ -256,7 +257,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public void startClientRemoteWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
+    public synchronized void startClientRemoteWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
                         IWarpEngine callerEngine,IWarpDevice target, IWarpServiceListener listener,
                         Object [] params, IWarpable[] remoteParams)
     {
@@ -284,7 +285,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
+    public synchronized void startServerRemoteWarpService(Class<? extends IWarpService> serviceClass, WarpServiceInfo serviceInfo,
                         IBeam warpBeam, IWarpServiceListener listener, IWarpEngine callerEngine, Object [] params)
     {
         try {
@@ -312,7 +313,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
 
     /*############### ACTIVE SERVICES LOGIC ###############*/
     @Override
-    public void onBeamCreate(IBeam warpBeam, IWarpService service)
+    public synchronized void onBeamCreate(IBeam warpBeam, IWarpService service)
     {
         if(!mActiveBeams.containsKey(warpBeam))
         {
@@ -321,7 +322,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
     }
 
     @Override
-    public void onBeamDestroy(IBeam warpBeam, IWarpService service)
+    public synchronized void onBeamDestroy(IBeam warpBeam, IWarpService service)
     {
         if(mActiveBeams.containsKey(warpBeam))
         {
@@ -363,6 +364,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         }
     }
 
+    //LOCAL SERVICE DEDICATED TASK
     private class LocalWarpServiceRunnable implements Runnable {
         private IWarpService toRun;
         private Object [] mParams;
@@ -388,20 +390,27 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
             try {
                 //Service is from now on Running
                 taskHandler.setHandledServiceStatus(IWarpService.ServiceStatus.RUNNING);
+                Log.d("WARP.DEBUG",Thread.currentThread().getName()+" - "+mInfo.name()+
+                        ": "+taskHandler.getHandledServiceStatus().name());
                 onServiceCreate(toRun,mInfo,taskHandler.getHandledServiceId(),this); //Adding service to active list
                 toRun.callService(null,mLocalEngine.getContext(),mParams);
                 if(mInfo.completion() == WarpServiceInfo.ServiceCompletion.IMPLICIT)
                 {
                     taskHandler.completeService(null,toRun);
+                    Log.d("WARP.DEBUG",Thread.currentThread().getName()+" - "+mInfo.name()+
+                            ": "+taskHandler.getHandledServiceStatus().name());
                 }
             }
             catch (Exception e)
             {
                 taskHandler.abortService(null,toRun,e.getMessage());
+                Log.d("WARP.DEBUG",Thread.currentThread().getName()+" - "+mInfo.name()+
+                        ": "+taskHandler.getHandledServiceStatus().name());
             }
         }
     }
 
+    //REMOTE CLIENT SERVICE DEDICATED TASK
     private class ClientRemoteWarpServiceRunnable implements Runnable {
         private IWarpService toRun;
         private WarpServiceInfo mInfo;
@@ -495,6 +504,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
         }
     }
 
+    //REMOTE SERVER SERVICE DEDICATED TASK
     private class ServerRemoteWarpServiceRunnable implements Runnable {
         private IWarpService toRun;
         private IBeam mWarpBeam;

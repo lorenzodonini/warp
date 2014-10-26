@@ -19,7 +19,7 @@ import java.util.*;
         launcher = WarpLighthouseLauncher.class, protocol = WarpServiceInfo.Protocol.NONE)
 public class WarpLighthouseService extends DefaultWarpService {
     public static final int LISTEN_PORT=13838;
-    public static final int DEFAULT_SOCKET_TIMEOUT=1800000;
+    public static final int DEFAULT_SOCKET_TIMEOUT=180000;
     public static final byte BEACON_PING = 33;
     public static final int PACKET_SIZE = 4096;
     private static final String MULTICAST_LOCK_TAG = "warp.unibo.it";
@@ -30,6 +30,7 @@ public class WarpLighthouseService extends DefaultWarpService {
     {
         checkOptionalParameters(params,1);
         IWarpEngine warpDrive = (IWarpEngine)params[0];
+        setContext(context);
         setEnabled(true);
 
         byte [] buf = new byte[PACKET_SIZE];
@@ -43,13 +44,12 @@ public class WarpLighthouseService extends DefaultWarpService {
         }
         builder.setLength(PACKET_SIZE);
         data = builder.toString().getBytes("UTF-8");
-        DatagramPacket packet = new DatagramPacket(buf,buf.length);
         //Setting up the broadcast socket
-        MulticastSocket broadcastSocket = new MulticastSocket(LISTEN_PORT);
+        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT);
+        broadcastSocket.setBroadcast(true);
         broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
-        broadcastSocket.joinGroup(InetAddress.getByName(getBroadcastAddress()));
-        DatagramSocket socket = new DatagramSocket();
-        socket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
+        InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress());
+        DatagramPacket packet = new DatagramPacket(buf,buf.length);
 
         //Starting service
         WifiManager wifi = (WifiManager) ((Context)getContext()).getSystemService(Context.WIFI_SERVICE);
@@ -58,7 +58,9 @@ public class WarpLighthouseService extends DefaultWarpService {
         while (isEnabled())
         {
             try {
-                packet.setData(buf);
+                //Setting up the Datagram Packet in order to receive on Broadcast Address
+                packet.setPort(LISTEN_PORT);
+                packet.setAddress(broadcastAddress);
                 broadcastSocket.receive(packet);
             }
             catch (InterruptedIOException e)
@@ -68,8 +70,11 @@ public class WarpLighthouseService extends DefaultWarpService {
             buf = packet.getData();
             if(buf != null && buf.length == 1 && buf[0]==BEACON_PING)
             {
+                //Setting up the Datagram Packet in order to send to a single host (Unicast)
                 packet.setData(data);
-                socket.send(packet);
+                packet.setAddress(packet.getAddress());
+                packet.setPort(packet.getPort());
+                broadcastSocket.send(packet);
             }
         }
         lock.release();

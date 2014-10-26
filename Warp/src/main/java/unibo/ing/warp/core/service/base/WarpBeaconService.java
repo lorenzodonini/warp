@@ -33,8 +33,8 @@ public class WarpBeaconService extends DefaultWarpService {
         long startTime;
         boolean bChanged;
         DatagramSocket socket = new DatagramSocket();
-        String broad = getBroadcastAddress();
-        InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress());
+        String broadcast = getBroadcastAddress();
+        InetAddress broadcastAddress = InetAddress.getByName(broadcast);
         String [] availableServicesNames;
         byte [] data = new byte[WarpLighthouseService.PACKET_SIZE];
         byte [] ping = new byte[] {WarpLighthouseService.BEACON_PING};
