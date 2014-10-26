@@ -35,7 +35,7 @@ public class AndroidLocalDevice implements IWarpLocalDevice {
                 }
             });
         }
-        mWarpDrive.startEngine(); //TODO: Need to check if it produces any random bug!
+        //mWarpDrive.startEngine(); //TODO: Need to check if it produces any random bug!
     }
     @Override
     public String getDeviceName()

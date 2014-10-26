@@ -1,5 +1,6 @@
 package unibo.ing.warp.core.android;
 
+import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpServiceObserver;
 import unibo.ing.warp.core.service.IWarpService;

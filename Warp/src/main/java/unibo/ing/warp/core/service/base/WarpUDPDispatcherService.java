@@ -25,14 +25,14 @@ import java.util.EnumSet;
  */
 @WarpServiceInfo(type = WarpServiceInfo.Type.LOCAL, label = "Dispatch", execution =
         WarpServiceInfo.ServiceExecution.CONCURRENT, name = "udpServiceDispatcher",
-        launcher = WarpDispatcherLauncher.class)
+        launcher = WarpDispatcherLauncher.class, protocol = WarpServiceInfo.Protocol.NONE)
 public class WarpUDPDispatcherService extends DefaultWarpService {
     private IWarpEngine warpDrive;
     private boolean bEnabled;
     private Object [] mParams;
     private String mUserPermissionKey;
     public static final int LISTEN_PORT=13837;
-    public static final int DEFAULT_SOCKET_TIMEOUT=1800000;
+    public static final int DEFAULT_SOCKET_TIMEOUT=180000;
     public static final String SERVICE_REQUEST_ACCEPTED="OK";
     public static final String SERVICE_REQUEST_REFUSED="ABORT";
 

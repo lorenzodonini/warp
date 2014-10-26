@@ -60,9 +60,6 @@ public class MainActivity extends Activity {
         WarpServiceInfo info = WarpUtils.getWarpServiceInfo(DirectWifiDiscoverService.class);
         mWifiP2PDiscoverName = info.name();
 
-        //Creating Local Device
-        manager.setLocalDevice(new AndroidLocalDevice(this,null,mAccessKey));
-
         //Setting default resources
         mLibrary = WarpResourceLibrary.getInstance();
         mLibrary.setResource(WarpResourceLibrary.RES_ACCESS_MANAGER, mAccessKey, manager);
@@ -83,6 +80,10 @@ public class MainActivity extends Activity {
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         filter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         registerReceiver(mReceiver,filter);
+
+        //It is important that the Library has already been initialized when we start the Engine
+        manager.setLocalDevice(new AndroidLocalDevice(this,null,mAccessKey));
+        manager.getLocalDevice().getWarpEngine().startEngine();
 
         //Graphics
         GridView gridView = (GridView)findViewById(R.id.deviceView);

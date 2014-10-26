@@ -18,7 +18,7 @@ import java.util.*;
         WarpServiceInfo.ServiceExecution.CONCURRENT, name="lightHouse", target = WarpServiceInfo.Target.ANDROID,
         launcher = WarpLighthouseLauncher.class, protocol = WarpServiceInfo.Protocol.NONE)
 public class WarpLighthouseService extends DefaultWarpService {
-    public static final int LISTEN_PORT=13837;
+    public static final int LISTEN_PORT=13838;
     public static final int DEFAULT_SOCKET_TIMEOUT=1800000;
     public static final byte BEACON_PING = 33;
     public static final int PACKET_SIZE = 4096;

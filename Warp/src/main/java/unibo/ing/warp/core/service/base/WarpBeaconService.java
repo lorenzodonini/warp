@@ -108,7 +108,6 @@ public class WarpBeaconService extends DefaultWarpService {
 
     private String getBroadcastAddress() throws SocketException
     {
-        //TODO: MUTUATED CODE! CHECK IT
         System.setProperty("java.net.preferIPv4Stack", "true");
         for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();)
         {
