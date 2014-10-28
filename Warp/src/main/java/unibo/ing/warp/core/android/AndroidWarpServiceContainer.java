@@ -405,7 +405,7 @@ public class AndroidWarpServiceContainer implements IWarpServiceContainer, IWarp
             {
                 taskHandler.abortService(null,toRun,e.getMessage());
                 Log.d("WARP.DEBUG",Thread.currentThread().getName()+" - "+mInfo.name()+
-                        ": "+taskHandler.getHandledServiceStatus().name());
+                        ": "+taskHandler.getHandledServiceStatus().name()+ " # "+e.getMessage());
             }
         }
     }

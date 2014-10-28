@@ -105,6 +105,7 @@ public class MainActivity extends Activity {
             NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
             if(netInfo != null && netInfo.isConnected())
             {
+                //Activating
                 if(!manager.isServiceActive(WarpBeaconService.class,mAccessKey))
                 {
                     manager.startWarpService(WarpBeaconService.class,mAccessKey,ServiceOperation.CALL,null);

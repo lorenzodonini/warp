@@ -50,7 +50,7 @@ public class WarpBeaconService extends DefaultWarpService {
             startTime = System.currentTimeMillis();
             currentInterval = defaultInterval;
             socket.send(broadcastPacket);
-            while(true)
+            while(isEnabled())
             {
                 try{
                     currentInterval = currentInterval - (System.currentTimeMillis() - startTime);
@@ -99,6 +99,7 @@ public class WarpBeaconService extends DefaultWarpService {
                 getWarpServiceHandler().onServiceProgressUpdate(this);
             }
         }
+        socket.close();
     }
 
     @Override
