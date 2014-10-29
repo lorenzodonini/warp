@@ -3,11 +3,13 @@ package unibo.ing.warp.core.service.base;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import android.widget.Toast;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpEngine;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.WarpLighthouseLauncher;
+import unibo.ing.warp.utils.WarpUtils;
 import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.*;
@@ -36,35 +38,50 @@ public class WarpLighthouseService extends DefaultWarpService {
         setEnabled(true);
         mCurrentThread = Thread.currentThread();
 
-        byte [] buf = new byte[PACKET_SIZE];
-        byte [] data;
+        byte [] ping = new byte[1]; //Broadcast Packet
+        byte [] data;  //Unicast Packet
+        InetAddress ipAddress, reverseIp;
         StringBuilder builder = new StringBuilder();
         Collection<String> activeServiceNames = warpDrive.getServicesNames();
         for(String serviceName : activeServiceNames)
         {
             builder.append(serviceName);
-            builder.append(";");
+            builder.append(';');
         }
+        builder.append('#');
         builder.setLength(PACKET_SIZE);
         data = builder.toString().getBytes("UTF-8");
-        //Setting up the broadcast socket
-        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT);
-        InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress());
-        broadcastSocket.setBroadcast(true);
-        broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
-        DatagramPacket packet = new DatagramPacket(buf,buf.length);
 
-        //Starting service
+        //Configuring multicast lock
         WifiManager wifi = (WifiManager) ((Context)getContext()).getSystemService(Context.WIFI_SERVICE);
         WifiManager.MulticastLock lock = wifi.createMulticastLock(MULTICAST_LOCK_TAG);
+        ipAddress = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromInt(
+                wifi.getConnectionInfo().getIpAddress()));
+        reverseIp = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromIntReversed(
+                wifi.getConnectionInfo().getIpAddress()));
+
+        //Setting up the broadcast socket
+        InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress(
+                ipAddress.getHostAddress(), reverseIp.getHostAddress()));
+        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT,broadcastAddress);
+        DatagramSocket unicastSocket = new DatagramSocket();
+        broadcastSocket.setBroadcast(true);
+        broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
+        DatagramPacket broadcastPacket = new DatagramPacket(ping,ping.length);
+        DatagramPacket unicastPacket = new DatagramPacket(data,PACKET_SIZE);
+
+        //Starting service
         lock.acquire();
         while (isEnabled())
         {
             try {
                 //Setting up the Datagram Packet in order to receive on Broadcast Address
-                packet.setPort(LISTEN_PORT);
-                packet.setAddress(broadcastAddress);
-                broadcastSocket.receive(packet);
+                broadcastPacket.setData(ping);
+                broadcastPacket.setPort(LISTEN_PORT);
+                broadcastPacket.setAddress(broadcastAddress);
+                broadcastSocket.receive(broadcastPacket);
+                Log.d("WARP.DEBUG","WarpBaconService: Broadcast received from "
+                        +broadcastPacket.getAddress().getHostAddress());
             }
             catch (InterruptedIOException e)
             {
@@ -76,14 +93,21 @@ public class WarpLighthouseService extends DefaultWarpService {
             }
             if(isEnabled())
             {
-                buf = packet.getData();
-                if(buf != null && buf.length == 1 && buf[0]==BEACON_PING)
+                String senderAddress = broadcastPacket.getAddress().getHostAddress();
+                 if(senderAddress.equals(ipAddress.getHostAddress()) ||
+                        senderAddress.equals(reverseIp.getHostAddress()))
+                {
+                    //We don't want to answer our own request!!
+                    continue;
+                }
+                if(broadcastPacket.getLength() == 1 && broadcastPacket.getData()[0]==BEACON_PING)
                 {
                     //Setting up the Datagram Packet in order to send to a single host (Unicast)
-                    packet.setData(data);
-                    packet.setAddress(packet.getAddress());
-                    packet.setPort(packet.getPort());
-                    broadcastSocket.send(packet);
+                    unicastPacket.setAddress(broadcastPacket.getAddress());
+                    unicastPacket.setPort(broadcastPacket.getPort());
+                    unicastSocket.send(unicastPacket);
+                    Log.d("WARP.DEBUG","WarpBaconService: Unicast response sent to "
+                            +unicastPacket.getAddress().getHostAddress());
                 }
             }
         }
@@ -97,7 +121,7 @@ public class WarpLighthouseService extends DefaultWarpService {
         //It's a local service, so no service can be provided!
     }
 
-    private String getBroadcastAddress() throws SocketException
+    private String getBroadcastAddress(String ipAddress, String reverseIpAddress) throws SocketException
     {
         System.setProperty("java.net.preferIPv4Stack", "true");
         for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();)
@@ -107,10 +131,15 @@ public class WarpLighthouseService extends DefaultWarpService {
             {
                 for (InterfaceAddress interfaceAddress : ni.getInterfaceAddresses())
                 {
-                    InetAddress broadcast = interfaceAddress.getBroadcast();
-                    if(broadcast != null)
+                    //The found interface must be the one relative to the passed IP address
+                    String address = interfaceAddress.getAddress().getHostAddress();
+                    if(address.equals(ipAddress) || address.equals(reverseIpAddress))
                     {
-                        return broadcast.toString().substring(1);
+                        InetAddress broadcast = interfaceAddress.getBroadcast();
+                        if(broadcast != null)
+                        {
+                            return broadcast.toString().substring(1);
+                        }
                     }
                 }
             }

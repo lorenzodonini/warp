@@ -66,6 +66,7 @@ public class WarpUtils {
         return filePath;
     }
 
+    //Raw IPv4 Address - NOT REVERSED
     public static byte [] getRawIPv4AddressFromInt(int address)
     {
         byte bytes [] = BigInteger.valueOf(address).toByteArray();
@@ -85,30 +86,16 @@ public class WarpUtils {
         return inetAddrBytes;
     }
 
-    public static void checkNetworkInterfaces()
+    //Raw IPv4 Address - REVERSED
+    public static byte [] getRawIPv4AddressFromIntReversed(int address)
     {
-        try
+        byte bytes [] = BigInteger.valueOf(address).toByteArray();
+        byte inetAddrBytes [] = new byte[4];
+        int j = 0;
+        for(int i=3; i>=0; i--)
         {
-            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
-            while(ifs.hasMoreElements())
-            {
-                NetworkInterface i = ifs.nextElement();
-                List<InterfaceAddress> addresses = i.getInterfaceAddresses();
-                Log.d("NetworkInterface", i.getName() + " - " + i.getDisplayName());
-                for(InterfaceAddress a: addresses)
-                {
-                    InetAddress broadcast = a.getBroadcast();
-                    Log.d("NetworkAddress",a.getAddress().getHostAddress());
-                    if(broadcast != null)
-                    {
-                        Log.d("NetworkBroadcastAddress",broadcast.getHostAddress());
-                    }
-                }
-            }
+            inetAddrBytes[j++] = bytes[i];
         }
-        catch (SocketException e)
-        {
-            e.printStackTrace();
-        }
+        return inetAddrBytes;
     }
 }

@@ -332,7 +332,6 @@ public class WifiConnectService extends DefaultWarpService {
         Context context = (Context)getContext();
         context.unregisterReceiver(mReceiver);
         mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
-        WarpUtils.checkNetworkInterfaces(); //TODO: NOT NEEDED!
 
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();

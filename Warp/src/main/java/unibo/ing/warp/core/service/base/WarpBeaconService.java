@@ -1,10 +1,12 @@
 package unibo.ing.warp.core.service.base;
 
+import android.util.Log;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.WarpBeaconLauncher;
 import unibo.ing.warp.core.service.listener.WarpBeaconServiceListener;
+import unibo.ing.warp.utils.WarpUtils;
 import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.*;
@@ -23,21 +25,25 @@ public class WarpBeaconService extends DefaultWarpService {
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
-        checkOptionalParameters(params,1);
+        checkOptionalParameters(params,2);
         setEnabled(true);
         mResult = new HashMap<InetAddress, String[]>();
         mResultTimeout = new HashMap<InetAddress, Long>();
         long defaultInterval = (Long)params[0];
+        int rawIpAddress = (Integer)params[1];
         long currentInterval;
         long deviceTimeout;
         long startTime;
         boolean bChanged;
+
         DatagramSocket socket = new DatagramSocket();
-        String broadcast = getBroadcastAddress();
+        InetAddress ipAddress = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromInt(rawIpAddress));
+        InetAddress reverseIp = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromIntReversed(rawIpAddress));
+        String broadcast = getBroadcastAddress(ipAddress.getHostAddress(),reverseIp.getHostAddress());
         InetAddress broadcastAddress = InetAddress.getByName(broadcast);
         String [] availableServicesNames;
-        byte [] data = new byte[WarpLighthouseService.PACKET_SIZE];
-        byte [] ping = new byte[] {WarpLighthouseService.BEACON_PING};
+        byte [] ping = new byte[] {WarpLighthouseService.BEACON_PING}; //Broadcast packet
+        byte [] data = new byte[WarpLighthouseService.PACKET_SIZE]; //Unicast packet
 
         //Sending only a ping for broadcast, then expecting results
         DatagramPacket broadcastPacket = new DatagramPacket(ping, ping.length,
@@ -49,16 +55,19 @@ public class WarpBeaconService extends DefaultWarpService {
         {
             startTime = System.currentTimeMillis();
             currentInterval = defaultInterval;
-            socket.send(broadcastPacket);
+            socket.send(broadcastPacket);  //Broadcast PING
+            Log.d("WARP.DEBUG","WarpBaconService: Broadcast Sent");
             while(isEnabled())
             {
                 try{
                     currentInterval = currentInterval - (System.currentTimeMillis() - startTime);
                     socket.setSoTimeout((int)currentInterval);
-                    //Change dimensions of packet?!
-                    socket.receive(unicastPacket);
+                    unicastPacket.setData(data); //TODO: UNNECESSARY?
+                    socket.receive(unicastPacket); //Receive Unicast response
                     InetAddress senderAddress = unicastPacket.getAddress();
-                    availableServicesNames = Arrays.toString(unicastPacket.getData()).split(";");
+                    Log.d("WARP.DEBUG","WarpBaconService: Response received by "+senderAddress.getHostAddress());
+                    String payload = new String(unicastPacket.getData(),"UTF-8");
+                    availableServicesNames = payload.split("#")[0].split(";");
                     //Updating result
                     if(!mResult.containsKey(senderAddress))
                     {
@@ -108,7 +117,7 @@ public class WarpBeaconService extends DefaultWarpService {
         //Do nothing since it is a local service!!
     }
 
-    private String getBroadcastAddress() throws SocketException
+    private String getBroadcastAddress(String ipAddress, String reverseIpAddress) throws SocketException
     {
         System.setProperty("java.net.preferIPv4Stack", "true");
         for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();)
@@ -118,10 +127,15 @@ public class WarpBeaconService extends DefaultWarpService {
             {
                 for (InterfaceAddress interfaceAddress : ni.getInterfaceAddresses())
                 {
-                    InetAddress broadcast = interfaceAddress.getBroadcast();
-                    if(broadcast != null)
+                    //The found interface must be the one relative to the passed IP address
+                    String address = interfaceAddress.getAddress().getHostAddress();
+                    if(address.equals(ipAddress) || address.equals(reverseIpAddress))
                     {
-                        return broadcast.toString().substring(1);
+                        InetAddress broadcast = interfaceAddress.getBroadcast();
+                        if(broadcast != null)
+                        {
+                            return broadcast.toString().substring(1);
+                        }
                     }
                 }
             }

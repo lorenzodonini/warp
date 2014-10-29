@@ -159,7 +159,6 @@ public class DirectWifiConnectService extends DefaultWarpService {
         Context context = (Context)getContext();
         context.unregisterReceiver(mReceiver);
         mReceiver=null; //Since the Service may stay referenced, the receiver should stay too --> Deallocate
-        WarpUtils.checkNetworkInterfaces();
 
         WifiP2pDevice device = (WifiP2pDevice) mWifiDirectDevice.getAbstractDevice();
         if(!group.isGroupOwner())
