@@ -2,6 +2,7 @@ package unibo.ing.warp.core.service.base;
 
 import android.util.Log;
 import unibo.ing.warp.core.IBeam;
+import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.service.DefaultWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.launcher.WarpBeaconLauncher;
@@ -19,22 +20,23 @@ import java.util.*;
         protocol = WarpServiceInfo.Protocol.NONE, callListener = WarpBeaconServiceListener.class)
 public class WarpBeaconService extends DefaultWarpService {
     private boolean bEnabled;
-    private Map<InetAddress, String []> mResult;
-    private Map<InetAddress, Long> mResultTimeout;
+    private Map<WarpLocation, String []> mResult;
+    private Map<WarpLocation, Long> mResultTimeout;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
     {
         checkOptionalParameters(params,2);
         setEnabled(true);
-        mResult = new HashMap<InetAddress, String[]>();
-        mResultTimeout = new HashMap<InetAddress, Long>();
+        mResult = new HashMap<WarpLocation, String[]>();
+        mResultTimeout = new HashMap<WarpLocation, Long>();
         long defaultInterval = (Long)params[0];
         int rawIpAddress = (Integer)params[1];
         long currentInterval;
         long deviceTimeout;
         long startTime;
         boolean bChanged;
+        WarpLocation peerLocation;
 
         DatagramSocket socket = new DatagramSocket();
         InetAddress ipAddress = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromInt(rawIpAddress));
@@ -64,21 +66,28 @@ public class WarpBeaconService extends DefaultWarpService {
                     socket.setSoTimeout((int)currentInterval);
                     unicastPacket.setData(data); //TODO: UNNECESSARY?
                     socket.receive(unicastPacket); //Receive Unicast response
+
+                    //Creating corresponding WarpLocation Object
                     InetAddress senderAddress = unicastPacket.getAddress();
-                    Log.d("WARP.DEBUG","WarpBaconService: Response received by "+senderAddress.getHostAddress());
+                    peerLocation = new WarpLocation(senderAddress);
+                    peerLocation.setIPv4Address(senderAddress.getHostAddress());
+                    Log.d("WARP.DEBUG","WarpBaconService: Response received by "+peerLocation.getStringIPv4Address());
+
                     String payload = new String(unicastPacket.getData(),"UTF-8");
                     availableServicesNames = payload.split("#")[0].split(";");
                     //Updating result
-                    if(!mResult.containsKey(senderAddress))
+                    if(!mResult.containsKey(peerLocation))
                     {
-                        mResult.put(senderAddress,availableServicesNames);
-                        mResultTimeout.put(senderAddress,defaultInterval*3);
+                        mResult.put(peerLocation,availableServicesNames);
+                        mResultTimeout.put(peerLocation,defaultInterval*3);
                         getWarpServiceHandler().onServiceProgressUpdate(this);
                     }
                     else
                     {
-                        mResultTimeout.put(senderAddress,defaultInterval*3);
+                        mResultTimeout.put(peerLocation,defaultInterval*3);
                     }
+                    Log.d("WARP.DEBUG","WarpBeaconService: "+peerLocation.getStringIPv4Address()+
+                            " expires in "+mResultTimeout.get(peerLocation));
                 }
                 catch (InterruptedIOException e)
                 {
@@ -87,20 +96,20 @@ public class WarpBeaconService extends DefaultWarpService {
             }
             //Decreasing time in which devices have last been seen
             bChanged=false;
-            for(InetAddress address: mResult.keySet())
+            for(WarpLocation location: mResult.keySet())
             {
-                deviceTimeout = mResultTimeout.get(address);
+                deviceTimeout = mResultTimeout.get(location);
                 deviceTimeout-= defaultInterval;
                 //Removing elements that aren't reachable anymore
                 if(deviceTimeout <= 0)
                 {
-                    mResult.remove(address);
-                    mResultTimeout.remove(address);
+                    mResult.remove(location);
+                    mResultTimeout.remove(location);
                     bChanged=true;
                 }
                 else
                 {
-                    mResultTimeout.put(address,deviceTimeout);
+                    mResultTimeout.put(location,deviceTimeout);
                 }
             }
             if(bChanged)

@@ -63,7 +63,7 @@ public class WarpLighthouseService extends DefaultWarpService {
         //Setting up the broadcast socket
         InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress(
                 ipAddress.getHostAddress(), reverseIp.getHostAddress()));
-        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT,broadcastAddress);
+        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT);
         DatagramSocket unicastSocket = new DatagramSocket();
         broadcastSocket.setBroadcast(true);
         broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
@@ -78,7 +78,7 @@ public class WarpLighthouseService extends DefaultWarpService {
                 //Setting up the Datagram Packet in order to receive on Broadcast Address
                 broadcastPacket.setData(ping);
                 broadcastPacket.setPort(LISTEN_PORT);
-                broadcastPacket.setAddress(broadcastAddress);
+                //broadcastPacket.setAddress(broadcastAddress); PERHAPS NOT NEEDED!
                 broadcastSocket.receive(broadcastPacket);
                 Log.d("WARP.DEBUG","WarpBaconService: Broadcast received from "
                         +broadcastPacket.getAddress().getHostAddress());

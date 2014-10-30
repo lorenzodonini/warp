@@ -38,20 +38,20 @@ public class WarpBeaconServiceListener extends DefaultWarpServiceListener {
         if(progress != null && progress.length == 1 && progress[0] instanceof Map<?,?>)
         {
             @SuppressWarnings("unchecked")
-            Map<InetAddress, String[]> nodes = (Map<InetAddress,String []>)progress[0];
+            Map<WarpLocation, String[]> nodes = (Map<WarpLocation,String []>)progress[0];
             updateDeviceManager(nodes);
         }
     }
 
-    private void updateDeviceManager(Map<InetAddress, String []> nodes)
+    private void updateDeviceManager(Map<WarpLocation, String []> nodes)
     {
         IWarpInteractiveDevice [] interactiveDevices = new IWarpInteractiveDevice[nodes.size()];
         AndroidNetworkDevice networkDevice;
         WarpDeviceManager deviceManager = mAccessManager.getDeviceManager();
         int i=0;
-        for(InetAddress address: nodes.keySet())
+        for(WarpLocation peerLocation: nodes.keySet())
         {
-            networkDevice = new AndroidNetworkDevice(new WarpLocation(address));
+            networkDevice = new AndroidNetworkDevice(peerLocation);
             interactiveDevices[i++] = new AndroidInteractiveDevice(mAccessManager,
                     IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED,networkDevice);
         }
