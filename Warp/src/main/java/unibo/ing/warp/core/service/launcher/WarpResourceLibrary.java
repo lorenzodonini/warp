@@ -24,7 +24,7 @@ public final class WarpResourceLibrary {
         mPermissions = new HashMap<String, String>();
     }
 
-    public static WarpResourceLibrary getInstance()
+    public synchronized static WarpResourceLibrary getInstance()
     {
         if(mSingleton == null)
         {
@@ -67,7 +67,7 @@ public final class WarpResourceLibrary {
         return false;
     }
 
-    private synchronized void putResource(String resourceName, String permissionKey, Object resource)
+    private void putResource(String resourceName, String permissionKey, Object resource)
     {
         if(permissionKey != null)
         {

@@ -3,7 +3,6 @@ package unibo.ing.warp.core.service.base;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
-import android.widget.Toast;
 import unibo.ing.warp.core.IBeam;
 import unibo.ing.warp.core.IWarpEngine;
 import unibo.ing.warp.core.service.DefaultWarpService;
@@ -27,7 +26,7 @@ public class WarpLighthouseService extends DefaultWarpService {
     public static final int PACKET_SIZE = 4096;
     private static final String MULTICAST_LOCK_TAG = "warp.unibo.it";
     private boolean bEnabled;
-    private Thread mCurrentThread;
+    private MulticastSocket mBroadcastSocket;
 
     @Override
     public void callService(IBeam warpBeam, Object context, Object[] params) throws Exception
@@ -36,7 +35,6 @@ public class WarpLighthouseService extends DefaultWarpService {
         IWarpEngine warpDrive = (IWarpEngine)params[0];
         setContext(context);
         setEnabled(true);
-        mCurrentThread = Thread.currentThread();
 
         byte [] ping = new byte[1]; //Broadcast Packet
         byte [] data;  //Unicast Packet
@@ -61,12 +59,8 @@ public class WarpLighthouseService extends DefaultWarpService {
                 wifi.getConnectionInfo().getIpAddress()));
 
         //Setting up the broadcast socket
-        InetAddress broadcastAddress = InetAddress.getByName(getBroadcastAddress(
-                ipAddress.getHostAddress(), reverseIp.getHostAddress()));
-        DatagramSocket broadcastSocket = new DatagramSocket(LISTEN_PORT);
-        DatagramSocket unicastSocket = new DatagramSocket();
-        broadcastSocket.setBroadcast(true);
-        broadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
+        mBroadcastSocket = new MulticastSocket(LISTEN_PORT);
+        mBroadcastSocket.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
         DatagramPacket broadcastPacket = new DatagramPacket(ping,ping.length);
         DatagramPacket unicastPacket = new DatagramPacket(data,PACKET_SIZE);
 
@@ -76,10 +70,7 @@ public class WarpLighthouseService extends DefaultWarpService {
         {
             try {
                 //Setting up the Datagram Packet in order to receive on Broadcast Address
-                broadcastPacket.setData(ping);
-                broadcastPacket.setPort(LISTEN_PORT);
-                //broadcastPacket.setAddress(broadcastAddress); PERHAPS NOT NEEDED!
-                broadcastSocket.receive(broadcastPacket);
+                mBroadcastSocket.receive(broadcastPacket);
                 Log.d("WARP.DEBUG","WarpBaconService: Broadcast received from "
                         +broadcastPacket.getAddress().getHostAddress());
             }
@@ -94,10 +85,12 @@ public class WarpLighthouseService extends DefaultWarpService {
             if(isEnabled())
             {
                 String senderAddress = broadcastPacket.getAddress().getHostAddress();
-                 if(senderAddress.equals(ipAddress.getHostAddress()) ||
+                if(senderAddress.equals(ipAddress.getHostAddress()) ||
                         senderAddress.equals(reverseIp.getHostAddress()))
                 {
                     //We don't want to answer our own request!!
+                    Log.d("WARP.DEBUG",
+                            Thread.currentThread().getName()+" - Dropped Incoming packet from "+senderAddress);
                     continue;
                 }
                 if(broadcastPacket.getLength() == 1 && broadcastPacket.getData()[0]==BEACON_PING)
@@ -105,13 +98,12 @@ public class WarpLighthouseService extends DefaultWarpService {
                     //Setting up the Datagram Packet in order to send to a single host (Unicast)
                     unicastPacket.setAddress(broadcastPacket.getAddress());
                     unicastPacket.setPort(broadcastPacket.getPort());
-                    unicastSocket.send(unicastPacket);
+                    mBroadcastSocket.send(unicastPacket);
                     Log.d("WARP.DEBUG","WarpBaconService: Unicast response sent to "
                             +unicastPacket.getAddress().getHostAddress());
                 }
             }
         }
-        broadcastSocket.close();
         lock.release();
     }
 
@@ -121,7 +113,7 @@ public class WarpLighthouseService extends DefaultWarpService {
         //It's a local service, so no service can be provided!
     }
 
-    private String getBroadcastAddress(String ipAddress, String reverseIpAddress) throws SocketException
+    /*private String getBroadcastAddress(String ipAddress, String reverseIpAddress) throws SocketException
     {
         System.setProperty("java.net.preferIPv4Stack", "true");
         for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();)
@@ -145,7 +137,7 @@ public class WarpLighthouseService extends DefaultWarpService {
             }
         }
         return null;
-    }
+    }*/
 
     private synchronized void setEnabled(boolean enabled)
     {
@@ -160,7 +152,7 @@ public class WarpLighthouseService extends DefaultWarpService {
     public void stopService()
     {
         setEnabled(false);
-        mCurrentThread.interrupt();
+        mBroadcastSocket.close();
     }
 
     @Override

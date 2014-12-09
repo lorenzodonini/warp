@@ -39,6 +39,7 @@ public class WarpBeaconService extends DefaultWarpService {
         WarpLocation peerLocation;
 
         DatagramSocket socket = new DatagramSocket();
+        socket.setBroadcast(true);
         InetAddress ipAddress = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromInt(rawIpAddress));
         InetAddress reverseIp = InetAddress.getByAddress(WarpUtils.getRawIPv4AddressFromIntReversed(rawIpAddress));
         String broadcast = getBroadcastAddress(ipAddress.getHostAddress(),reverseIp.getHostAddress());

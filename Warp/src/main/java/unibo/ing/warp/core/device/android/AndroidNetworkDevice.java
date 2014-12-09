@@ -4,9 +4,6 @@ import unibo.ing.warp.core.WarpLocation;
 import unibo.ing.warp.core.device.DefaultWarpDevice;
 import unibo.ing.warp.core.service.IWarpService;
 
-import java.net.InetAddress;
-import java.util.Arrays;
-
 /**
  * Created by Lorenzo Donini on 5/7/2014.
  */
@@ -35,9 +32,7 @@ public class AndroidNetworkDevice extends DefaultWarpDevice {
     {
         /*CAREFUL: Don't call getHostAddress on the InetAddress object, otherwise a stupid
         Network operation is initiated, which leads to a crash if called on the UI thread!! */
-        InetAddress addr = mDeviceLocation.getIPv4Address();
-        byte [] tmp = addr.getAddress();
-        String result = Arrays.toString(tmp);
+        String result = mDeviceLocation.getStringIPv4Address();
         return result;
     }
 
