@@ -2,6 +2,7 @@ package unibo.ing.warp.core;
 
 import unibo.ing.warp.core.device.DefaultWarpDevice;
 import unibo.ing.warp.core.device.IWarpDeviceRequestHandler;
+import unibo.ing.warp.core.service.IWarpService;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.listener.IWarpServiceListener;
 import unibo.ing.warp.utils.WarpUtils;
@@ -79,6 +80,31 @@ public abstract class DefaultWarpInteractiveDevice implements IWarpInteractiveDe
     public synchronized void addAvailableServices(Collection<WarpServiceInfo> services)
     {
         mServices.addAll(services);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public synchronized void addAvailableServicesByNames(String [] classNames)
+    {
+        WarpServiceInfo info;
+        Class<IWarpService> serviceClass;
+
+        if(classNames == null)
+        {
+            return;
+        }
+        for(String name: classNames)
+        {
+            try {
+                serviceClass = (Class<IWarpService>) Class.forName(name);
+                info = WarpUtils.getWarpServiceInfo(serviceClass);
+                mServices.add(info);
+            }
+            catch (ClassNotFoundException e)
+            {
+                //The specific service does not exist on local device, but we want to process the rest
+            }
+        }
     }
 
     @Override

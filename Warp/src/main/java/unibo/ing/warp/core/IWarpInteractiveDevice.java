@@ -19,6 +19,7 @@ public interface IWarpInteractiveDevice {
     public void callPullService(WarpServiceInfo serviceDescriptor);
     public Collection<WarpServiceInfo> getAvailableServices(IWarpServiceListener listener);
     public void addAvailableServices(Collection<WarpServiceInfo> services);
+    public void addAvailableServicesByNames(String [] classNames);
     public WarpDeviceStatus getDeviceStatus();
     public int getDeviceOperationProgress();
     public String getDeviceOperationLabel();

@@ -58,6 +58,10 @@ public class WarpableUDPResponse extends DefaultWarpableObject {
     @Override
     public void setValue(Object value)
     {
+        if(value == null)
+        {
+            return;
+        }
         if(value instanceof Integer)
         {
             mPort = (Integer) value;

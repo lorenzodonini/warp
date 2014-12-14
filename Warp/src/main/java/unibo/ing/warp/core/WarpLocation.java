@@ -22,6 +22,7 @@ public class WarpLocation {
     private InetAddress mIPv4Address;
     private String mStringIPv4;
     private byte [] mByteIPv4;
+    private String mPhysicalAddress;
     private int mPort;
     public static final String LOCAL_ADDRESS="localhost";
 
@@ -91,13 +92,34 @@ public class WarpLocation {
     }
 
     /**
-     * Sets IPv4 address given String containing the value of the address.
+     * Sets IPv4 address given the String containing the value of the address.
      *
      * @param addr  The String representation of the IP address (e.g. "192.168.0.1")
      */
     public synchronized void setIPv4Address(String addr)
     {
         mStringIPv4=addr;
+    }
+
+    /**
+     * Sets Physical address given the String containing the value of the address.
+     *
+     * @param addr  The String representation of the MAC address
+     */
+    public synchronized void setPhyisicalAddress(String addr)
+    {
+        mPhysicalAddress = addr;
+    }
+
+    /**
+     * Getter method used to obtain the current WarpLocation physical address. The address
+     * is returned as a String.
+     *
+     * @return  Returns the MAC address. Returns null if no physical address was set
+     */
+    public synchronized String getPhyisicalAddress()
+    {
+        return mPhysicalAddress;
     }
 
     /**

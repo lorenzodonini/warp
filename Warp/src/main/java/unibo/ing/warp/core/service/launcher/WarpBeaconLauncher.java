@@ -48,7 +48,7 @@ public class WarpBeaconLauncher extends DefaultWarpServiceLauncher {
     @Override
     protected Object[] getCallServiceParameters(IWarpInteractiveDevice target)
     {
-        return new Object[] {mInterval, mCurrentWifiIpAddress};
+        return new Object[] {mInterval, mCurrentWifiIpAddress, mAccessManager.getLocalDevice().getWarpEngine()};
     }
 
     @Override

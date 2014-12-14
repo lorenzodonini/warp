@@ -24,6 +24,7 @@ public class WarpLighthouseService extends DefaultWarpService {
     public static final int DEFAULT_SOCKET_TIMEOUT=60000;
     public static final byte BEACON_PING = 33;
     public static final int PACKET_SIZE = 4096;
+    public static final byte JOIN_PING = 32;
     private static final String MULTICAST_LOCK_TAG = "warp.unibo.it";
     private boolean bEnabled;
     private MulticastSocket mBroadcastSocket;
@@ -93,14 +94,21 @@ public class WarpLighthouseService extends DefaultWarpService {
                             Thread.currentThread().getName()+" - Dropped Incoming packet from "+senderAddress);
                     continue;
                 }
-                if(broadcastPacket.getLength() == 1 && broadcastPacket.getData()[0]==BEACON_PING)
+                if(broadcastPacket.getLength() == 1)
                 {
-                    //Setting up the Datagram Packet in order to send to a single host (Unicast)
-                    unicastPacket.setAddress(broadcastPacket.getAddress());
-                    unicastPacket.setPort(broadcastPacket.getPort());
-                    mBroadcastSocket.send(unicastPacket);
-                    Log.d("WARP.DEBUG","WarpBaconService: Unicast response sent to "
-                            +unicastPacket.getAddress().getHostAddress());
+                    if(broadcastPacket.getData()[0]==BEACON_PING)
+                    {
+                        //Setting up the Datagram Packet in order to send to a single host (Unicast)
+                        unicastPacket.setAddress(broadcastPacket.getAddress());
+                        unicastPacket.setPort(broadcastPacket.getPort());
+                        mBroadcastSocket.send(unicastPacket);
+                        Log.d("WARP.DEBUG","WarpBaconService: Unicast response sent to "
+                                +unicastPacket.getAddress().getHostAddress());
+                    }
+                    else if(broadcastPacket.getData()[0]==JOIN_PING)
+                    {
+                        //TODO: THINK OF A PLAUSIBLE SOLUTION! GIMP!
+                    }
                 }
             }
         }

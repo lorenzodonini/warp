@@ -7,7 +7,12 @@ import unibo.ing.warp.core.device.WarpAccessManager;
 import unibo.ing.warp.core.device.WarpDeviceManager;
 import unibo.ing.warp.core.device.android.AndroidNetworkDevice;
 import unibo.ing.warp.core.service.IWarpService;
+import unibo.ing.warp.core.service.WarpServiceInfo;
+import unibo.ing.warp.utils.WarpUtils;
+
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -52,8 +57,9 @@ public class WarpBeaconServiceListener extends DefaultWarpServiceListener {
         for(WarpLocation peerLocation: nodes.keySet())
         {
             networkDevice = new AndroidNetworkDevice(peerLocation);
-            interactiveDevices[i++] = new AndroidInteractiveDevice(mAccessManager,
+            interactiveDevices[i] = new AndroidInteractiveDevice(mAccessManager,
                     IWarpInteractiveDevice.WarpDeviceStatus.CONNECTED,networkDevice);
+            interactiveDevices[i++].addAvailableServicesByNames(nodes.get(peerLocation));
         }
         deviceManager.addWarpDevices(interactiveDevices,AndroidNetworkDevice.class,true);
     }

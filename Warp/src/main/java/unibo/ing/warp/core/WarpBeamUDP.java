@@ -87,6 +87,7 @@ public class WarpBeamUDP implements IBeam {
             mSocket.setSoTimeout(getDefaultTimeout());
             mSocket.receive(incomingPacket);
             mRemoteLocation.setIPv4Address(incomingPacket.getAddress());
+            mRemoteLocation.setPort(incomingPacket.getPort());
             return result.warpFrom(incomingPacket.getData());
         }
         return -1;
