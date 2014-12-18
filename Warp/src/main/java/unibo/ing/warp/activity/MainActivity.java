@@ -26,7 +26,6 @@ import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiDiscoverService;
 import unibo.ing.warp.core.service.android.wifi.WifiScanService;
 import unibo.ing.warp.core.service.base.WarpBeaconService;
-import unibo.ing.warp.core.service.base.WarpLighthouseService;
 import unibo.ing.warp.core.service.launcher.*;
 import unibo.ing.warp.core.service.launcher.android.*;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiConnectLauncher;
@@ -110,10 +109,10 @@ public class MainActivity extends Activity {
                 {
                     manager.startWarpService(WarpBeaconService.class,mAccessKey,ServiceOperation.CALL,null);
                 }
-                if(!manager.isServiceActive(WarpLighthouseService.class,mAccessKey))
+                /*if(!manager.isServiceActive(WarpLighthouseService.class,mAccessKey))
                 {
                     manager.startWarpService(WarpLighthouseService.class, mAccessKey, ServiceOperation.CALL, null);
-                }
+                }*/
             }
         }
     }

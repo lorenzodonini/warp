@@ -18,7 +18,6 @@ import unibo.ing.warp.core.service.IWarpService.ServiceOperation;
 import unibo.ing.warp.core.service.WarpServiceInfo;
 import unibo.ing.warp.core.service.android.p2p.DirectWifiPingService;
 import unibo.ing.warp.core.service.base.WarpBeaconService;
-import unibo.ing.warp.core.service.base.WarpLighthouseService;
 import unibo.ing.warp.core.service.launcher.IWarpServiceLauncher;
 import unibo.ing.warp.core.service.launcher.WarpResourceLibrary;
 import unibo.ing.warp.core.service.launcher.android.DirectWifiDiscoverLauncher;
@@ -64,7 +63,7 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
                         IWarpInteractiveDevice.WarpDeviceStatus.DISCONNECTED);
                 //Stopping network ping services
                 mWarpAccessManager.stopWarpService(WarpBeaconService.class,mMasterKey);
-                mWarpAccessManager.stopWarpService(WarpLighthouseService.class,mMasterKey);
+                //mWarpAccessManager.stopWarpService(WarpLighthouseService.class,mMasterKey);
                 return;
             }
         }
@@ -94,11 +93,11 @@ public class AndroidNetworkStateManager extends BroadcastReceiver {
                     mWarpAccessManager.startWarpService(WarpBeaconService.class, mMasterKey,
                             ServiceOperation.CALL, null);
                 }
-                if(!mWarpAccessManager.isServiceActive(WarpLighthouseService.class,mMasterKey))
+                /*if(!mWarpAccessManager.isServiceActive(WarpLighthouseService.class,mMasterKey))
                 {
                     mWarpAccessManager.startWarpService(WarpLighthouseService.class, mMasterKey,
                             ServiceOperation.CALL, null);
-                }
+                }*/
                 return;
             }
         }

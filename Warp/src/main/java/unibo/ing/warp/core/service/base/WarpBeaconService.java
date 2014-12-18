@@ -14,6 +14,7 @@ import unibo.ing.warp.core.service.listener.WarpBeaconServiceListener;
 import unibo.ing.warp.core.warpable.WarpablePingObject;
 import unibo.ing.warp.utils.WarpUtils;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.*;
 import java.util.*;
 
@@ -42,6 +43,7 @@ public class WarpBeaconService extends DefaultWarpService {
     {
         checkOptionalParameters(params,3); //TODO: ADJUST IN LAUNCHER
         setEnabled(true);
+        setContext(context);
         mResult = new HashMap<WarpLocation, String[]>();
         mResultTimeout = new HashMap<WarpLocation, Long>();
         mNeighbors = new HashSet<String>();
@@ -97,6 +99,12 @@ public class WarpBeaconService extends DefaultWarpService {
 
                     //Creating corresponding WarpLocation Object
                     InetAddress senderAddress = defaultPacket.getAddress();
+                    if(senderAddress.getHostAddress().equals(ipAddress.getHostAddress())
+                            || senderAddress.getHostAddress().equals(reverseIp.getHostAddress()))
+                    {
+                        //We want to process only external packets, not our own!
+                        continue;
+                    }
                     int read = pingObject.warpFrom(defaultPacket.getData());
                     int code = (Integer) pingObject.getValue();
                     switch(code) {
@@ -135,23 +143,37 @@ public class WarpBeaconService extends DefaultWarpService {
                             break;
                     }
                 }
-                catch (Exception e)
+                catch(InterruptedIOException e)
                 {
                     break;
                 }
+                catch (Exception e)
+                {
+                    Log.d("WARP.DEBUG","WarpBeaconService: exception occurred: "+e.getMessage());
+                }
             }
-            //Updating timeouts of currently stored devices
-            updateTimeouts(defaultInterval);
 
-            //Performing a standard beacon ping
-            pingObject.setValue(new String[0]); //Set Empty services data
-            pingObject.setValue(BEACON_PING);
-            pingObject.setValue(myMacAddress);
-            servicesPacket.setData(pingObject.warpTo());
-            servicesPacket.setAddress(broadcastAddress);
-            servicesPacket.setPort(LISTEN_PORT);
+            if(isEnabled())
+            {
+                //Updating timeouts of currently stored devices
+                updateTimeouts(defaultInterval);
+
+                //Performing a standard beacon ping
+                pingObject.setValue(new String[0]); //Set services data
+                pingObject.setValue(BEACON_PING);
+                pingObject.setValue(myMacAddress);
+                servicesPacket.setData(pingObject.warpTo());
+                servicesPacket.setAddress(broadcastAddress);
+                servicesPacket.setPort(LISTEN_PORT);
+                mBroadcastSocket.send(servicesPacket);
+                Log.d("WARP.DEBUG","WarpBeaconService: Broadcast Sent");
+            }
         }
-        mBroadcastSocket.close();
+        lock.release();
+        if(!mBroadcastSocket.isClosed())
+        {
+            mBroadcastSocket.close();
+        }
     }
 
     @Override
@@ -181,6 +203,7 @@ public class WarpBeaconService extends DefaultWarpService {
                 mResult.remove(location);
                 mResultTimeout.remove(location);
                 mNeighbors.remove(location.getPhyisicalAddress());
+                Log.d("WARP.DEBUG","WarpBeaconService: "+location.getStringIPv4Address()+" removed");
                 bChanged = true;
             }
             else
@@ -198,11 +221,17 @@ public class WarpBeaconService extends DefaultWarpService {
     {
         WarpLocation peerLocation = new WarpLocation(senderAddress);
         peerLocation.setPhyisicalAddress(senderMac);
-        mResult.put(peerLocation,services);
+        if(services != null)
+        {
+            mResult.put(peerLocation, services);
+        }
+        else
+        {
+            mResult.put(peerLocation, new String[0]);
+        }
         mResultTimeout.put(peerLocation,interval*3);
         mNeighbors.add(senderMac);
-        Log.d("WARP.DEBUG","WarpBeaconService: "+peerLocation.getStringIPv4Address()+
-                " expires in "+mResultTimeout.get(peerLocation));
+        Log.d("WARP.DEBUG","WarpBeaconService: "+peerLocation.getStringIPv4Address()+" added");
     }
 
     private void respondToPeer(DatagramPacket packet, InetAddress sender, WarpablePingObject pingObject,
@@ -256,6 +285,7 @@ public class WarpBeaconService extends DefaultWarpService {
     public void stopService()
     {
         setEnabled(false);
+        mBroadcastSocket.close();
     }
 
     @Override
