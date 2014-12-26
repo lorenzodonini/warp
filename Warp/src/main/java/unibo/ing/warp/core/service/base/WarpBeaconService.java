@@ -93,6 +93,10 @@ public class WarpBeaconService extends DefaultWarpService {
             {
                 try{
                     currentInterval = currentInterval - (System.currentTimeMillis() - startTime);
+                    if(currentInterval < 0)
+                    {
+                        break;
+                    }
                     mBroadcastSocket.setSoTimeout((int)currentInterval);
                     defaultPacket.setData(buffer); //TODO: UNNECESSARY?!
                     mBroadcastSocket.receive(defaultPacket); //Receive either Unicast response or Broadcast ping
@@ -110,13 +114,15 @@ public class WarpBeaconService extends DefaultWarpService {
                     switch(code) {
                         case JOIN_PING:
                             //We don't know the device and want to add it, but also respond to the ping
-                            addDevice(senderAddress, pingObject.getMacAddress(),
+                            /*addDevice(senderAddress, pingObject.getMacAddress(),
                                     pingObject.getServices(), defaultInterval);
                             respondToPeer(servicesPacket, senderAddress, pingObject, servicesData,
-                                    myMacAddress); //Unicast RESPONSE PING
+                                    myMacAddress); //Unicast RESPONSE PING*/
+                            Log.d("WARP.DEBUG","WarpBeaconService: Received JOIN PING from "+senderAddress.getHostAddress());
                             break;
                         case BEACON_PING:
                             //Just a regular ping
+                            Log.d("WARP.DEBUG","WarpBeaconService: Received BEACON PING from "+senderAddress.getHostAddress());
                             String mac = pingObject.getMacAddress();
                             if (mNeighbors.contains(mac)) {
                                 //We know the device already, updating timeout
@@ -126,16 +132,16 @@ public class WarpBeaconService extends DefaultWarpService {
                             } else {
                                 /*We somehow don't know the device (either due to an error or because we
                                 didn't receive the JOIN_PING). Therefore we must add the device */
-                                addDevice(senderAddress, pingObject.getMacAddress(),
+                                /*addDevice(senderAddress, pingObject.getMacAddress(),
                                         pingObject.getServices(), defaultInterval);
                                 respondToPeer(servicesPacket, senderAddress, pingObject, servicesData,
-                                        myMacAddress); //Unicast RESPONSE PING
+                                        myMacAddress); //Unicast RESPONSE PING*/
                             }
                             break;
                         case RESPONSE_PING:
                             //We don't know the device and want to add it
-                            addDevice(senderAddress, pingObject.getMacAddress(),
-                                    pingObject.getServices(), defaultInterval);
+                            /*addDevice(senderAddress, pingObject.getMacAddress(),
+                                    pingObject.getServices(), defaultInterval);*/
                             Log.d("WARP.DEBUG", "WarpBaconService: Response received by "
                                     + senderAddress.getHostAddress());
                             break;
@@ -220,6 +226,7 @@ public class WarpBeaconService extends DefaultWarpService {
     private void addDevice(InetAddress senderAddress, String senderMac, String [] services, long interval)
     {
         WarpLocation peerLocation = new WarpLocation(senderAddress);
+        peerLocation.setIPv4Address(senderAddress.getHostAddress());
         peerLocation.setPhyisicalAddress(senderMac);
         if(services != null)
         {
