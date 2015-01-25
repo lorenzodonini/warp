@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  */
 public class WarpableDouble extends DefaultWarpableObject {
     private Double mDouble;
-    private final static String DOUBLE_KEY="mDouble";
+    public final static String DOUBLE_KEY="mDouble";
 
     public WarpableDouble()
     {
@@ -40,18 +40,30 @@ public class WarpableDouble extends DefaultWarpableObject {
     @Override
     protected Object fromJSONObject() throws JSONException
     {
-        return (getJSONObject()!=null) ? getJSONObject().getDouble(DOUBLE_KEY) : null;
+        if(getJSONObject() == null)
+        {
+            return null;
+        }
+        mDouble = getJSONObject().getDouble(DOUBLE_KEY);
+        return mDouble;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mDouble=(Double)value;
+        if(value != null && key != null && key.equals(DOUBLE_KEY))
+        {
+            mDouble = (Double) value;
+        }
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
-        return (mDouble!=null) ? mDouble : super.getValue();
+        if(key != null && mDouble != null && key.equals(DOUBLE_KEY))
+        {
+            return mDouble;
+        }
+        return super.getValue(key);
     }
 }

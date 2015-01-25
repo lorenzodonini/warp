@@ -66,9 +66,9 @@ public class WarpBeaconService extends DefaultWarpService {
 
         //Putting local data into the Ping Object
         WarpablePingObject pingObject = new WarpablePingObject();
-        pingObject.setValue(servicesData);
-        pingObject.setValue(JOIN_PING);
-        pingObject.setValue(myMacAddress);
+        pingObject.setValue(WarpablePingObject.SERVICES_KEY,servicesData);
+        pingObject.setValue(WarpablePingObject.CODE_KEY,JOIN_PING);
+        pingObject.setValue(WarpablePingObject.MAC_KEY,myMacAddress);
 
         byte [] buffer = new byte[PACKET_SIZE]; //Common 4 KB buffer for Datagrams
         byte [] data = pingObject.warpTo(); //Broadcast Ping data
@@ -82,7 +82,7 @@ public class WarpBeaconService extends DefaultWarpService {
         if(isEnabled())
         {
             mBroadcastSocket.send(servicesPacket); //Broadcast JOIN PING
-            Log.d("WARP.DEBUG","WarpBaconService: Initial Broadcast Sent");
+            Log.d("WARP.DEBUG","WarpBaconService: JOIN_PING Sent");
         }
 
         while(isEnabled())
@@ -110,7 +110,7 @@ public class WarpBeaconService extends DefaultWarpService {
                         continue;
                     }
                     int read = pingObject.warpFrom(defaultPacket.getData());
-                    int code = (Integer) pingObject.getValue();
+                    int code = (Integer) pingObject.getValue(WarpablePingObject.CODE_KEY);
                     switch(code) {
                         case JOIN_PING:
                             //We don't know the device and want to add it, but also respond to the ping
@@ -123,12 +123,12 @@ public class WarpBeaconService extends DefaultWarpService {
                         case BEACON_PING:
                             //Just a regular ping
                             Log.d("WARP.DEBUG","WarpBeaconService: Received BEACON PING from "+senderAddress.getHostAddress());
-                            String mac = pingObject.getMacAddress();
+                            String mac = (String) pingObject.getValue(WarpablePingObject.MAC_KEY);
                             if (mNeighbors.contains(mac)) {
                                 //We know the device already, updating timeout
-                                WarpLocation location = new WarpLocation(senderAddress);
+                                /*WarpLocation location = new WarpLocation(senderAddress);
                                 location.setIPv4Address(senderAddress.getHostAddress());
-                                mResultTimeout.put(location, defaultInterval * 3);
+                                mResultTimeout.put(location, defaultInterval * 3);*/
                             } else {
                                 /*We somehow don't know the device (either due to an error or because we
                                 didn't receive the JOIN_PING). Therefore we must add the device */
@@ -162,17 +162,17 @@ public class WarpBeaconService extends DefaultWarpService {
             if(isEnabled())
             {
                 //Updating timeouts of currently stored devices
-                updateTimeouts(defaultInterval);
+                //updateTimeouts(defaultInterval);
 
                 //Performing a standard beacon ping
-                pingObject.setValue(new String[0]); //Set services data
-                pingObject.setValue(BEACON_PING);
-                pingObject.setValue(myMacAddress);
+                pingObject.setValue(WarpablePingObject.SERVICES_KEY, new String[0]); //Set services data
+                pingObject.setValue(WarpablePingObject.CODE_KEY, BEACON_PING);
+                pingObject.setValue(WarpablePingObject.MAC_KEY, myMacAddress);
                 servicesPacket.setData(pingObject.warpTo());
                 servicesPacket.setAddress(broadcastAddress);
                 servicesPacket.setPort(LISTEN_PORT);
                 mBroadcastSocket.send(servicesPacket);
-                Log.d("WARP.DEBUG","WarpBeaconService: Broadcast Sent");
+                Log.d("WARP.DEBUG","WarpBeaconService: BEACON_PING Sent");
             }
         }
         lock.release();
@@ -244,9 +244,9 @@ public class WarpBeaconService extends DefaultWarpService {
     private void respondToPeer(DatagramPacket packet, InetAddress sender, WarpablePingObject pingObject,
                                String [] servicesData, String macAddress) throws JSONException, IOException
     {
-        pingObject.setValue(servicesData);
-        pingObject.setValue(RESPONSE_PING);
-        pingObject.setValue(macAddress);
+        pingObject.setValue(WarpablePingObject.SERVICES_KEY,servicesData);
+        pingObject.setValue(WarpablePingObject.CODE_KEY,RESPONSE_PING);
+        pingObject.setValue(WarpablePingObject.MAC_KEY,macAddress);
         packet.setAddress(sender);
         packet.setPort(LISTEN_PORT);
         packet.setData(pingObject.warpTo());

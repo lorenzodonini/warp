@@ -12,6 +12,7 @@ public class WarpableFile implements IWarpable {
     private File mFile;
     private static final int DEFAULT_BUFFER_SIZE = 10000;
     private static final int MAX_UDP_PAYLOAD = 65536;
+    public static final String FILE_KEY = "mFile";
     private int mBufferSize;
     private PushFileService.FileWarpProgressUpdater mUpdater;
 
@@ -113,15 +114,22 @@ public class WarpableFile implements IWarpable {
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
+        if(key != null && mFile != null && key.equals(FILE_KEY))
+        {
+            return mFile;
+        }
         return null;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mFile=(File)value;
+        if(key != null &&  value != null && key.equals(FILE_KEY))
+        {
+            mFile = (File)value;
+        }
     }
 
     @Override

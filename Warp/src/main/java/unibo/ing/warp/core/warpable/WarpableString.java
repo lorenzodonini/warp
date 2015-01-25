@@ -10,7 +10,7 @@ import org.json.JSONObject;
  */
 public class WarpableString extends DefaultWarpableObject {
     private String mString;
-    private final static String STRING_KEY="mString";
+    public final static String STRING_KEY="mString";
 
     public WarpableString()
     {
@@ -38,18 +38,30 @@ public class WarpableString extends DefaultWarpableObject {
     @Override
     protected Object fromJSONObject() throws JSONException
     {
-        return (getJSONObject()!=null) ? getJSONObject().getString(STRING_KEY) : null;
+        if(getJSONObject() == null)
+        {
+            return null;
+        }
+        mString = getJSONObject().getString(STRING_KEY);
+        return mString;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mString=(String)value;
+        if(key != null && value != null && key.equals(STRING_KEY))
+        {
+            mString = (String) value;
+        }
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
-        return (mString!= null) ? mString : super.getValue();
+        if(key != null && mString != null && key.equals(STRING_KEY))
+        {
+            return mString;
+        }
+        return super.getValue(key);
     }
 }

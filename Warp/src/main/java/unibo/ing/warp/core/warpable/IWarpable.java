@@ -20,8 +20,8 @@ public interface IWarpable {
     public int warpFrom(DataInputStream inputStream) throws IOException, JSONException;
     public byte [] warpTo() throws JSONException;
     public int warpFrom(byte [] buffer) throws JSONException;
-    public Object getValue() throws JSONException;
-    public void setValue(Object value);
+    public Object getValue(String key) throws JSONException;
+    public void setValue(String key, Object value);
     public JSONObject getJSONObject();
     public void setJSONObject(JSONObject value);
 }

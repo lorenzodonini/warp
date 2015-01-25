@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
  */
 public class WarpableInteger extends DefaultWarpableObject{
     private Integer mInteger;
-    private final static String INT_KEY="mInteger";
+    public final static String INT_KEY="mInteger";
 
     public WarpableInteger()
     {
@@ -45,22 +45,26 @@ public class WarpableInteger extends DefaultWarpableObject{
         {
             return null;
         }
-        return getJSONObject().getInt(INT_KEY);
+        mInteger = getJSONObject().getInt(INT_KEY);
+        return mInteger;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mInteger=(Integer)value;
+        if(value != null && key != null && key.equals(INT_KEY))
+        {
+            mInteger = (Integer) value;
+        }
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
-        if(mInteger!=null)
+        if(key != null && key.equals(INT_KEY) && mInteger!=null)
         {
             return mInteger;
         }
-        return super.getValue();
+        return super.getValue(key);
     }
 }

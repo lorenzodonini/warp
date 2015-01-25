@@ -11,9 +11,9 @@ public class WarpablePingObject extends DefaultWarpableObject {
     private String mMacAddress;
     private String [] mServices;
     private int mPingCode;
-    private final static String SERVICES_KEY = "mServices";
-    private final static String CODE_KEY = "mCode";
-    private final static String MAC_KEY = "mMac";
+    public final static String SERVICES_KEY = "pingServices";
+    public final static String CODE_KEY = "pingCode";
+    public final static String MAC_KEY = "pingMac";
 
     public WarpablePingObject() { super(); }
 
@@ -67,37 +67,52 @@ public class WarpablePingObject extends DefaultWarpableObject {
         {
             mServices = null;
         }
-        return mPingCode;
-    }
-
-    public String [] getServices()
-    {
-        return mServices;
-    }
-
-    public String getMacAddress()
-    {
-        return mMacAddress;
+        return null;
     }
 
     @Override
-    public void setValue(Object value)
+    public Object getValue(String key)
     {
-        if(value == null)
+        if(key == null)
+        {
+            return null;
+        }
+        if(key.equals(SERVICES_KEY))
+        {
+            return mServices;
+        }
+        else if(key.equals(MAC_KEY))
+        {
+            return mMacAddress;
+        }
+        else if(key.equals(CODE_KEY))
+        {
+            return mPingCode;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    @Override
+    public void setValue(String key, Object value)
+    {
+        if(value == null || key == null)
         {
             return;
         }
-        if(value instanceof Byte)
+        if(key.equals(SERVICES_KEY))
         {
-            mPingCode = (Byte) value;
+            mServices = (String [])value;
         }
-        else if(value instanceof String [])
-        {
-            mServices = (String []) value;
-        }
-        else if(value instanceof String)
+        else if(key.equals(MAC_KEY))
         {
             mMacAddress = (String) value;
+        }
+        else if(key.equals(CODE_KEY))
+        {
+            mPingCode = (Byte) value;
         }
     }
 }

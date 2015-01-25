@@ -2,12 +2,9 @@ package unibo.ing.warp.core.warpable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.Socket;
 
 /**
  * User: lorenzodonini
@@ -73,12 +70,13 @@ public abstract class DefaultWarpableObject implements IWarpable {
      public int warpFrom(byte [] buffer) throws JSONException {
         String received = new String(buffer);
         mJsonObject = new JSONObject(received);
+        fromJSONObject();
 
         return received.length()*FORMAT_CHAR_SIZE;
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
         if(mJsonObject!=null)
         {

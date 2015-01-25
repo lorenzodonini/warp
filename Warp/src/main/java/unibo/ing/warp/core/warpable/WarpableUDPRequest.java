@@ -10,6 +10,7 @@ import org.json.JSONObject;
 public class WarpableUDPRequest extends DefaultWarpableObject {
     private static final String PARAM_NUM = "mLength";
     private static final String PARAM_ARRAY = "mParameters";
+    public static final String PARAM_KEY = "mParam";
     private WarpableParameter [] mParameters;
     private int mInnerIndex=0;
 
@@ -59,11 +60,25 @@ public class WarpableUDPRequest extends DefaultWarpableObject {
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        if(value != null && mInnerIndex < mParameters.length)
+        if(key != null && value != null && mInnerIndex < mParameters.length && key.equals(PARAM_KEY))
         {
             mParameters[mInnerIndex++]=(WarpableParameter)value;
         }
+    }
+
+    @Override
+    public Object getValue(String key) throws JSONException
+    {
+        if(key != null && key.equals(PARAM_KEY) && mParameters != null)
+        {
+            if(mInnerIndex < mParameters.length)
+            {
+                return mParameters[mInnerIndex++];
+            }
+            return null;
+        }
+        return super.getValue(key);
     }
 }

@@ -10,7 +10,7 @@ import org.json.JSONObject;
  */
 public class WarpableBoolean extends DefaultWarpableObject {
     private Boolean mBoolean;
-    private static final String BOOL_KEY="mBoolean";
+    public static final String BOOL_KEY="mBoolean";
 
     public WarpableBoolean()
     {
@@ -38,18 +38,30 @@ public class WarpableBoolean extends DefaultWarpableObject {
     @Override
     protected Object fromJSONObject() throws JSONException
     {
-        return (getJSONObject() != null) ? getJSONObject().getBoolean(BOOL_KEY) : null;
+        if(getJSONObject() == null)
+        {
+            return null;
+        }
+        mBoolean = getJSONObject().getBoolean(BOOL_KEY);
+        return mBoolean;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mBoolean=(Boolean)value;
+        if(value != null && key != null && key.equals(BOOL_KEY))
+        {
+            mBoolean = (Boolean) value;
+        }
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
-        return (mBoolean != null) ? mBoolean : super.getValue();
+        if(key != null && key.equals(BOOL_KEY) && mBoolean != null)
+        {
+            return mBoolean;
+        }
+        return super.getValue(key);
     }
 }

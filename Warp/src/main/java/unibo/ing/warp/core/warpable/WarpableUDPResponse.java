@@ -8,9 +8,9 @@ import org.json.JSONObject;
  */
 public class WarpableUDPResponse extends DefaultWarpableObject {
     private String mMessage;
-    private int mPort=-1;
-    private final static String MESSAGE_KEY="mMessage";
-    private final static String PORT_KEY="mPort";
+    private Integer mPort=-1;
+    public final static String MESSAGE_KEY="mMessage";
+    public final static String PORT_KEY="mPort";
 
     public WarpableUDPResponse()
     {
@@ -47,7 +47,7 @@ public class WarpableUDPResponse extends DefaultWarpableObject {
         }
         mMessage = json.getString(MESSAGE_KEY);
         mPort = json.getInt(PORT_KEY);
-        return mPort;
+        return null;
     }
 
     public String getMessage()
@@ -56,19 +56,37 @@ public class WarpableUDPResponse extends DefaultWarpableObject {
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        if(value == null)
+        if(value == null || key == null)
         {
             return;
         }
-        if(value instanceof Integer)
+        if(key.equals(PORT_KEY))
         {
-            mPort = (Integer) value;
+            mPort = (Integer)value;
         }
-        else if(value instanceof String)
+        else if(key.equals(MESSAGE_KEY))
         {
             mMessage = (String)value;
         }
+    }
+
+    @Override
+    public Object getValue(String key) throws JSONException
+    {
+        if(key == null)
+        {
+            return null;
+        }
+        if(key.equals(PORT_KEY) && mPort != null)
+        {
+            return mPort;
+        }
+        else if(key.equals(MESSAGE_KEY) && mMessage != null)
+        {
+            return mMessage;
+        }
+        return super.getValue(key);
     }
 }

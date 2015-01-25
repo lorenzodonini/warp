@@ -8,8 +8,8 @@ import org.json.JSONObject;
  */
 public class WarpableParameter extends DefaultWarpableObject {
     private IWarpable mParameter;
-    private static final String PARAM_CLASS = "mParamClass";
-    private static final String PARAM_VALUE = "mValue";
+    private static final String CLASS_KEY = "mClass";
+    public static final String PARAM_KEY = "mValue";
 
     public WarpableParameter()
     {
@@ -30,9 +30,9 @@ public class WarpableParameter extends DefaultWarpableObject {
     protected JSONObject toJSONObject() throws JSONException
     {
         JSONObject json = new JSONObject();
-        //Passing Warpable subclass, not object class
-        json.put(PARAM_CLASS,mParameter.getValue().getClass().getName());
-        json.put(PARAM_VALUE,mParameter.getJSONObject());
+        //Passing IWarpable subclass, not object class
+        json.put(CLASS_KEY, mParameter.getClass().getName());
+        json.put(PARAM_KEY,mParameter.getJSONObject());
         return json;
     }
 
@@ -44,11 +44,11 @@ public class WarpableParameter extends DefaultWarpableObject {
         {
             return null;
         }
-        JSONObject value = json.getJSONObject(PARAM_VALUE);
+        JSONObject value = json.getJSONObject(PARAM_KEY);
         try{
             @SuppressWarnings("unchecked")
             Class<? extends IWarpable> warpableClass = (Class<? extends IWarpable>)
-                    Class.forName(json.getString(PARAM_CLASS));
+                    Class.forName(json.getString(CLASS_KEY));
             mParameter = warpableClass.newInstance();
             mParameter.setJSONObject(value);
         }
@@ -61,8 +61,20 @@ public class WarpableParameter extends DefaultWarpableObject {
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mParameter = (IWarpable)value;
+        if(key != null && value != null && key.equals(PARAM_KEY))
+        {
+            mParameter = (IWarpable) value;
+        }
+    }
+
+    public Object getValue(String key) throws JSONException
+    {
+        if(key != null && mParameter != null && key.equals(PARAM_KEY))
+        {
+            return mParameter;
+        }
+        return super.getValue(key);
     }
 }

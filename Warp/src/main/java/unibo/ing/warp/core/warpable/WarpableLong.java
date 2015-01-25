@@ -3,8 +3,6 @@ package unibo.ing.warp.core.warpable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created with IntelliJ IDEA.
  * User: lorenzodonini
@@ -13,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public class WarpableLong extends DefaultWarpableObject {
     private Long mLong;
-    private final static String LONG_KEY="mLong";
+    public final static String LONG_KEY="mLong";
 
     public WarpableLong()
     {
@@ -45,22 +43,26 @@ public class WarpableLong extends DefaultWarpableObject {
         {
             return null;
         }
-        return ((Double)getJSONObject().getDouble(LONG_KEY)).longValue();
+        mLong = ((Double)getJSONObject().getDouble(LONG_KEY)).longValue();
+        return mLong;
     }
 
     @Override
-    public void setValue(Object value)
+    public void setValue(String key, Object value)
     {
-        mLong=(Long)value;
+        if(key != null && value != null && key.equals(LONG_KEY))
+        {
+            mLong = (Long) value;
+        }
     }
 
     @Override
-    public Object getValue() throws JSONException
+    public Object getValue(String key) throws JSONException
     {
-        if(mLong!=null)
+        if(key != null && mLong != null && key.equals(LONG_KEY))
         {
             return mLong;
         }
-        return super.getValue();
+        return super.getValue(key);
     }
 }
