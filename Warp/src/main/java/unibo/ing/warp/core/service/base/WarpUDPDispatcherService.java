@@ -129,11 +129,10 @@ public class WarpUDPDispatcherService extends DefaultWarpService {
         serviceName.warpFrom(packet.getData());
 
         Class<? extends IWarpService> serviceToStart = warpDrive.getServiceByName
-                ((String)serviceName.getValue());
+                ((String)serviceName.getValue(WarpableString.STRING_KEY));
         if(serviceToStart == null)
         {
             response = new WarpableUDPResponse(SERVICE_REQUEST_REFUSED,-1);
-            response.setValue(SERVICE_REQUEST_REFUSED);
             warpBeam.beamWarpable(response);
             shutdownBeam(warpBeam);
         }
@@ -165,7 +164,7 @@ public class WarpUDPDispatcherService extends DefaultWarpService {
         IWarpable extra = new WarpableUDPRequest();
         warpBeam.receiveWarpable(extra);
 
-        Object value = extra.getValue();
+        Object value = extra.getValue(WarpableUDPRequest.PARAM_KEY);
         if(value == null)
         {
             return null;
@@ -175,7 +174,7 @@ public class WarpUDPDispatcherService extends DefaultWarpService {
         IWarpable parameter;
         for(int i=0; i<parameters.length; i++)
         {
-            parameter = (IWarpable) parameters[i].getValue();
+            parameter = (IWarpable) parameters[i].getValue(WarpableParameter.VALUE_KEY);
             result[i]=parameter.getValue();
         }
         return result;

@@ -168,22 +168,23 @@ public class WarpHandshakeService extends DefaultWarpService {
         if(params==null || params.length==0)
         {
             //NO PARAMETERS
-            extra.setValue(WarpTCPDispatcherService.NO_EXTRA_PARAMETERS);
+            extra.setValue(WarpableString.STRING_KEY,WarpTCPDispatcherService.NO_EXTRA_PARAMETERS);
             mWarpBeam.beamWarpable(extra);
         }
         else
         {
             //EXTRA PARAMETERS TO BE SENT
-            extra.setValue(WarpTCPDispatcherService.EXTRA_PARAMETERS);
+            extra.setValue(WarpableString.STRING_KEY,WarpTCPDispatcherService.EXTRA_PARAMETERS);
             mWarpBeam.beamWarpable(extra);
 
-            paramNum.setValue(params.length);
+            paramNum.setValue(WarpableInteger.INT_KEY,params.length);
             mWarpBeam.beamWarpable(paramNum);
 
             for (IWarpable param : params)
             {
                 object = param;
-                paramClass.setValue(object.getValue().getClass().getName()); //TODO: HANDLE CLASS NAME
+                //TODO: HANDLE CLASS NAME
+                paramClass.setValue(WarpableString.STRING_KEY,object.getValue().getClass().getName());
                 mWarpBeam.beamWarpable(paramClass);
                 mWarpBeam.beamWarpable(object);
             }
@@ -223,7 +224,7 @@ public class WarpHandshakeService extends DefaultWarpService {
             //PARAMETERS
             for(IWarpable param : params)
             {
-                extra.setValue(new WarpableParameter(param));
+                extra.setValue(WarpableUDPRequest.PARAM_KEY,new WarpableParameter(param));
             }
         }
         mWarpBeam.beamWarpable(extra);

@@ -9,7 +9,7 @@ import org.json.JSONObject;
 public class WarpableParameter extends DefaultWarpableObject {
     private IWarpable mParameter;
     private static final String CLASS_KEY = "mClass";
-    public static final String PARAM_KEY = "mValue";
+    public static final String VALUE_KEY = "mValue";
 
     public WarpableParameter()
     {
@@ -32,7 +32,7 @@ public class WarpableParameter extends DefaultWarpableObject {
         JSONObject json = new JSONObject();
         //Passing IWarpable subclass, not object class
         json.put(CLASS_KEY, mParameter.getClass().getName());
-        json.put(PARAM_KEY,mParameter.getJSONObject());
+        json.put(VALUE_KEY,mParameter.getJSONObject());
         return json;
     }
 
@@ -44,7 +44,7 @@ public class WarpableParameter extends DefaultWarpableObject {
         {
             return null;
         }
-        JSONObject value = json.getJSONObject(PARAM_KEY);
+        JSONObject value = json.getJSONObject(VALUE_KEY);
         try{
             @SuppressWarnings("unchecked")
             Class<? extends IWarpable> warpableClass = (Class<? extends IWarpable>)
@@ -63,7 +63,7 @@ public class WarpableParameter extends DefaultWarpableObject {
     @Override
     public void setValue(String key, Object value)
     {
-        if(key != null && value != null && key.equals(PARAM_KEY))
+        if(key != null && value != null && key.equals(VALUE_KEY))
         {
             mParameter = (IWarpable) value;
         }
@@ -71,10 +71,16 @@ public class WarpableParameter extends DefaultWarpableObject {
 
     public Object getValue(String key) throws JSONException
     {
-        if(key != null && mParameter != null && key.equals(PARAM_KEY))
+        if(key != null && mParameter != null && key.equals(VALUE_KEY))
         {
             return mParameter;
         }
         return super.getValue(key);
+    }
+
+    @Override
+    public Object getValue() throws JSONException
+    {
+        return mParameter;
     }
 }

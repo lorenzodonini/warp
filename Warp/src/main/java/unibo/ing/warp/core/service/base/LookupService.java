@@ -52,12 +52,12 @@ public class LookupService extends DefaultWarpService {
         IWarpable serviceName = new WarpableString();
         IWarpable serviceNum = new WarpableInteger();
 
-        serviceNum.setValue(servicesNames.size());
+        serviceNum.setValue(WarpableInteger.INT_KEY,servicesNames.size());
         warpBeam.beamWarpable(serviceNum);
 
         for(String service: servicesNames)
         {
-            serviceName.setValue(service);
+            serviceName.setValue(WarpableString.STRING_KEY,service);
             warpBeam.beamWarpable(serviceName);
         }
     }

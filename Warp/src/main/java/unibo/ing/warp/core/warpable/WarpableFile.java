@@ -124,6 +124,12 @@ public class WarpableFile implements IWarpable {
     }
 
     @Override
+    public Object getValue() throws JSONException
+    {
+        return mFile;
+    }
+
+    @Override
     public void setValue(String key, Object value)
     {
         if(key != null &&  value != null && key.equals(FILE_KEY))

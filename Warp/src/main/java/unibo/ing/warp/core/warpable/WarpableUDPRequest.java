@@ -73,11 +73,7 @@ public class WarpableUDPRequest extends DefaultWarpableObject {
     {
         if(key != null && key.equals(PARAM_KEY) && mParameters != null)
         {
-            if(mInnerIndex < mParameters.length)
-            {
-                return mParameters[mInnerIndex++];
-            }
-            return null;
+            return mParameters;
         }
         return super.getValue(key);
     }

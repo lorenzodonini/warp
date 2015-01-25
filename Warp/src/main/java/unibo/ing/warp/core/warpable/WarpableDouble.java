@@ -66,4 +66,10 @@ public class WarpableDouble extends DefaultWarpableObject {
         }
         return super.getValue(key);
     }
+
+    @Override
+    public Object getValue() throws JSONException
+    {
+        return mDouble;
+    }
 }

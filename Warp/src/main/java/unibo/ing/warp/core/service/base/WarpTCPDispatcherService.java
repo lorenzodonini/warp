@@ -144,7 +144,7 @@ public class WarpTCPDispatcherService extends DefaultWarpService {
                 it is an invasive procedure and definitely not fit for a beta.
                 Default behaviour right now is a refusal message sent through the socket.
                  */
-            response.setValue(SERVICE_REQUEST_REFUSED);
+            response.setValue(WarpableString.STRING_KEY,SERVICE_REQUEST_REFUSED);
             warpBeam.beamWarpable(response);
             shutdownBeam(warpBeam);
         }
@@ -160,17 +160,17 @@ public class WarpTCPDispatcherService extends DefaultWarpService {
             {
                 return null;
             }
-            response.setValue(SERVICE_REQUEST_ACCEPTED);
+            response.setValue(WarpableString.STRING_KEY,SERVICE_REQUEST_ACCEPTED);
             warpBeam.beamWarpable(response);
             mParams=obtainExtraParameters(warpBeam);
             if(mParams==null)
             {
-                response.setValue(SERVICE_REQUEST_REFUSED);
+                response.setValue(WarpableString.STRING_KEY,SERVICE_REQUEST_REFUSED);
                 warpBeam.beamWarpable(response);
                 shutdownBeam(warpBeam);
                 return null;
             }
-            response.setValue(SERVICE_REQUEST_ACCEPTED);
+            response.setValue(WarpableString.STRING_KEY,SERVICE_REQUEST_ACCEPTED);
             warpBeam.beamWarpable(response);
         }
         return info;

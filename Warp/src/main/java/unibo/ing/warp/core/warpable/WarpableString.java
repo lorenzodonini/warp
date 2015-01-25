@@ -64,4 +64,10 @@ public class WarpableString extends DefaultWarpableObject {
         }
         return super.getValue(key);
     }
+
+    @Override
+    public Object getValue() throws JSONException
+    {
+        return mString;
+    }
 }

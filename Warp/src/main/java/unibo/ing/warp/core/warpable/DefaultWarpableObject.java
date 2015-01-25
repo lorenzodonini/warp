@@ -85,6 +85,11 @@ public abstract class DefaultWarpableObject implements IWarpable {
         return null;
     }
 
+    public Object getValue() throws JSONException
+    {
+        return getValue(null);
+    }
+
     @Override
     public JSONObject getJSONObject()
     {

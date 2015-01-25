@@ -67,4 +67,10 @@ public class WarpableInteger extends DefaultWarpableObject{
         }
         return super.getValue(key);
     }
+
+    @Override
+    public Object getValue() throws JSONException
+    {
+        return mInteger;
+    }
 }
